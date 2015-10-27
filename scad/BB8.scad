@@ -545,15 +545,37 @@ module fan_assembly(){
 
 		color("DimGray") render(){
 			translate([0,0, 42.5 / 2 - 23 / 2 - 4.9 - 6])
-				cylinder(h = 23, r = 59 / 2, center = true);
+				cylinder(
+					h = 23,
+					r = 59 / 2,
+					$fn = radial_resolution,
+					center = true);
 			translate([0,0, 42.5 / 2 - 4.9 / 2 - 6])
-				cylinder(h = 4.9, r1 = 59 / 2, r2 = 24.8 / 2, center = true);
+				cylinder(
+					h = 4.9,
+					r1 = 59 / 2,
+					r2 = 24.8 / 2,
+					$fn = radial_resolution,
+					center = true);
 			translate([0,0, - 42.5 / 2 + 5.6 / 2 + 3])
-				cylinder(h = 5.6, r1 = 44 / 2, r2 = 59 / 2, center = true);
+				cylinder(
+					h = 5.6,
+					r1 = 44 / 2,
+					r2 = 59 / 2,
+					$fn = radial_resolution,
+					center = true);
 			translate([0, 0, 42.5 / 2 - 3])
-				cylinder(h = 6, r = 4 / 2, center = true);
+				cylinder(
+					h = 6,
+					r = 4 / 2,
+					$fn = radial_resolution,
+					center = true);
 			translate([0, 0, - 42.5 / 2 + 1.5])
-				cylinder(h = 3, r = 6 / 2, center = true);
+				cylinder(
+					h = 3,
+					r = 6 / 2,
+					$fn = radial_resolution,
+					center = true);
 		}
 
 		color("LightGrey") render(){
@@ -610,15 +632,19 @@ module fan_assembly(){
 
 		translate([143,-65,125])
 			rotate([-90,0,0]){
-				parallax_continuous_rotation_servo();
-				round_servo_attachment();
-				translate_shaft(){
-					translate([0,0,9]){
-						cylinder(h=2.5, r=12, center = true);
-						translate([0,0,5])
-							cylinder(h=7.5, r=10, center = true);
-						translate([0,0,10])
-							cylinder(h=2.5, r=12, center = true);
+				color("Magenta") render() parallax_continuous_rotation_servo();
+				color("Indigo") render() round_servo_attachment();
+				color("Purple"){
+					render(){
+						translate_shaft(){
+							translate([0,0,9]){
+								cylinder(h=2.5, r=12, center = true);
+								translate([0,0,5])
+									cylinder(h=7.5, r=10, center = true);
+								translate([0,0,10])
+									cylinder(h=2.5, r=12, center = true);
+							}
+						}
 					}
 				}
 			}
@@ -631,23 +657,29 @@ module fan_assembly(){
 
 		translate([153,-55,154])
 			rotate([180,0,0]){
-				ls_0006_servo();
+				color("Magenta") render() ls_0006_servo();
 				translate_ls_0006_attachment()
 					rotate([0,0,latch_angle])
-						bar_attachment();
+						color("Indigo") render() bar_attachment();
 			}
 
 		// Motor Mount Latch
-		union(){
-			translate([171, -27 + dist, 141])
-				rotate([90,0,0])
-					cylinder(
-						h = 20,
-						r = 2.5,
-						$fn = radial_resolution / 4,
-						center = true);
-			translate([171, -17 + dist, 141])
-				sphere(r = 2.5, $fn = radial_resolution / 4 );
+		translate([0,dist,0]){
+			color("Red"){
+				render(){
+					union(){
+						translate([171, -27, 141])
+							rotate([90,0,0])
+								cylinder(
+									h = 20,
+									r = 2.5,
+									$fn = radial_resolution / 4,
+									center = true);
+						translate([171, -17, 141])
+							sphere(r = 2.5, $fn = radial_resolution / 4 );
+					}
+				}
+			}
 		}
 
 	}
@@ -849,6 +881,8 @@ module fan_assembly(){
 						cube([10,20,10], center = true);
 					translate([153, -63,145.25])
 						cube([29,4,5], center = true);
+					translate([147, -63,140.25])
+						cube([10,4,10], center = true);
 					translate([166.5, -57.5,145.25])
 						cube([5,15,5], center = true);
 
@@ -1028,11 +1062,10 @@ module fan_assembly(){
 
 	module tbar_assembly(){
 
-		color("Lime") render() 
-		motor_mount_slide();
+		color("Lime") render() motor_mount_slide();
 		color("Cyan") motor_mount_tbar();
 		slide_bearings();
-		//tbar_servos_latch();
+		tbar_servos_latch();
 
 	}
 
@@ -1407,13 +1440,42 @@ module fan_assembly(){
 
 	}
 
-	extension = 30;
-	//extension = $t * 30;
+	animating = false;
+	deployed = false;
 
-	hinge_angle = -55; // -55
-	//hinge_angle = $t * -55;
+	extension =
+		animating ?
+			$t < 0.5 ?
+					$t * 30 * 2 :
+					30
+			:
+			deployed ?
+				30 : 
+				0;
 
-	latch_angle = 60;
+	hinge_angle =
+		animating ?
+			$t < 0.5 ?
+					$t * -55 * 2 :
+					-55
+			:
+			deployed ?
+				-55 : 
+				0;
+
+	latch_angle =
+		animating ?
+			$t < 0.5 ?
+					60 :
+					60 - (($t - 0.5) * 90 * 2)
+			:
+			deployed ?
+				-30 : 
+				60;
+
+/*extension = $t < 0.5 ? $t * 30 * 2 : 30;
+	hinge_angle = $t < 0.5 ? $t * -55 * 2 : -55;
+	latch_angle = $t < 0.5 ? 60 : 60 - (($t - 0.5) * 90 * 2);*/
 
 	hinge_point = [173,0,142];
 	hinge_point_3 = [175.6, 0, 129.5];
@@ -1600,6 +1662,6 @@ module body_assembly(){
 	}
 }
 
-*cover_assembly();
+cover_assembly();
 %body_assembly();
 fan_assembly();
