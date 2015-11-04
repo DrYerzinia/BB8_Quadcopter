@@ -1,6 +1,6 @@
 // http://forum.openscad.org/Creating-pie-pizza-slice-shape-need-a-dynamic-length-array-td3148.html
 
-module pie_slice(r, start_angle, end_angle, radial_resolution) {
+module pie_slice(r, start_angle, end_angle) {
     R = r * sqrt(2) + 1;
     a0 = (4 * start_angle + 0 * end_angle) / 4;
     a1 = (3 * start_angle + 1 * end_angle) / 4;
@@ -9,7 +9,7 @@ module pie_slice(r, start_angle, end_angle, radial_resolution) {
     a4 = (0 * start_angle + 4 * end_angle) / 4;
     if(end_angle > start_angle)
         intersection() {
-        circle(r, $fn);
+        circle(r, $fa = fa(r));
         polygon([
             [0,0],
             [R * cos(a0), R * sin(a0)],
@@ -28,6 +28,10 @@ module rotate_about(v,a) {
 	translate(v) rotate(a) translate(-v) children(0);
 }
 
+module rotate_about_axis(v, ang, axis) {
+	translate(v) rotate(ang, axis) translate(-v) children(0);
+}
+
 // https://github.com/robofun/openscad-utils/blob/master/trapezoid.scad
 
 module trapezoid(width_base, width_top,height,thickness) {
@@ -36,3 +40,7 @@ module trapezoid(width_base, width_top,height,thickness) {
   linear_extrude(height = thickness) polygon(points=[[0,0],[width_base,0],[width_base-(width_base-width_top)/2,height],[(width_base-width_top)/2,height]], paths=[[0,1,2,3]]); 
   
 }
+
+// http://forum.openscad.org/fe-Tolerance-based-arc-approximation-td14212.html
+
+function fa(r)=($fn>0)?360/$fn:($fe>0)?($fe<r)?min(45,2*acos(1-$fe/r)):45:$fa; 
