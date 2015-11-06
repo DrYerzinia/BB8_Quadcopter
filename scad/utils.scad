@@ -25,19 +25,28 @@ module pie_slice(r, start_angle, end_angle) {
 // https://github.com/openscad/openscad/issues/29
 
 module rotate_about(v,a) {
-	translate(v) rotate(a) translate(-v) children(0);
+	translate(v) rotate(a) translate(-v) children();
 }
 
 module rotate_about_axis(v, ang, axis) {
-	translate(v) rotate(ang, axis) translate(-v) children(0);
+	translate(v) rotate(ang, axis) translate(-v) children();
 }
 
 // https://github.com/robofun/openscad-utils/blob/master/trapezoid.scad
 
-module trapezoid(width_base, width_top,height,thickness) {
+module trapezoid(width_base, width_top, height, thickness){
 	
 
-  linear_extrude(height = thickness) polygon(points=[[0,0],[width_base,0],[width_base-(width_base-width_top)/2,height],[(width_base-width_top)/2,height]], paths=[[0,1,2,3]]); 
+  linear_extrude(height = thickness)
+		polygon(
+			points =
+				[
+					[0,0],
+					[width_base,0],
+					[width_base-(width_base-width_top)/2,height],
+					[(width_base-width_top)/2,height]
+				],
+				paths=[[0,1,2,3]]); 
   
 }
 

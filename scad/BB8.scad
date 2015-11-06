@@ -19,6 +19,7 @@ use <hardware.scad>
 use <servos/parallax_continuous_rotation_servo.scad>
 use <servos/LS_0006_servo.scad>
 use <servos/HS_5065MG.scad>
+use <servos/TGY_4805_2PA.scad>
 use <motors/MN5212.scad>
 
 section_length = 140;
@@ -31,6 +32,7 @@ body_shell_thickness = 10;
 internal_radius = 170;
 
 joint_position = [197, 145, 0];
+prop_joint_position = [176, 0, 142.5];
 
 // servo throw = 25
 // 25 = sqrt((12.5 + x * sin(70)) ^ 2 + (x * cos(70)) ^ 2)
@@ -52,7 +54,7 @@ as = 11;
 animating = false;
 
 prop_deployed = false;
-cover_open = false;
+cover_open = true;
 
 arm_angle =
 	animating
@@ -161,9 +163,11 @@ blade_2_angle =
 	;
 
 rot_amt =
-	($t * as < 10)
-		? 1.0
-		: ($t * as - 10) * -1 + 1.0;
+	animating
+	? ($t * as < 10)
+			? 1.0
+			: ($t * as - 10) * -1 + 1.0
+	: 0
 	;
 
 /*
@@ -610,27 +614,80 @@ module Body_P13(){
 module Body_P12(){
 	render(){
 		test =  body_radius-6;
-		intersection(){
-			difference(){
-				rotate([90,0,90]){
-					linear_extrude(
-						height = 10,
-						center = true,//false,
-						convexity = 2,
-						twist = 0
-					){
-						polygon(
-							points = [
-								[0,0],
-								[test*cos(38.75),test*sin(38.75)],
-								[test*cos(51.25),test*sin(51.25)]
-							]
-						);
+		difference(){
+			union(){
+				intersection(){
+					difference(){
+						rotate([90,0,90]){
+							linear_extrude(
+								height = 10,
+								center = true,//false,
+								convexity = 2,
+								twist = 0
+							){
+								polygon(
+									points = [
+										[0,0],
+										[test*cos(38.75),test*sin(38.75)],
+										[test*cos(51.25),test*sin(51.25)]
+									]
+								);
+							}
+						}
+						sphere(r = internal_radius, $fn=radial_resolution);
 					}
+					sphere(
+						r = body_radius - body_shell_thickness,
+						$fa = fa(body_radius - body_shell_thickness));
 				}
-				sphere(r = internal_radius, $fn=radial_resolution);
+				translate([0, 176, 142.5])
+					rotate([0,90,0])
+						cylinder(
+							r = 10 / 2,
+							h = 10,
+							$fa = fa(10 / 2),
+							center = true);
+
 			}
-			sphere(r = body_radius - body_shell_thickness, $fn=radial_resolution);
+			union(){
+				translate([0, 176, 142.5])
+					rotate([0,90,0]){
+						cylinder(
+									r = 5 / 2,
+									h = 20,
+									$fa = fa(5 / 2),
+									center = true);
+
+						translate([0, 0, - 5 + 2.5 / 2 - 0.1])
+							cylinder(
+										r = 8 / 2,
+										h = 2.5,
+										$fa = fa(8 / 2),
+										center = true);
+
+						translate([0, 0, 5 - 2.5 / 2 + 0.025])
+							cylinder(
+										r = 8 / 2,
+										h = 2.5,
+										$fa = fa(8 / 2),
+										center = true);
+
+						translate([0, 0,  - 5 + 0.6 / 2 - 0.025])
+							cylinder(
+										r = 9.2 / 2,
+										h = 0.6,
+										$fa = fa(9.2 / 2),
+										center = true);
+
+						translate([0, 0, 5 - 0.6 / 2 + 0.025])
+							cylinder(
+										r = 9.2 / 2,
+										h = 0.6,
+										$fa = fa(9.2 / 2),
+										center = true);
+
+					}
+			}
 		}
 	}
 }
@@ -2131,38 +2188,166 @@ module cover_assembly(){
 
 }
 
+module flight_motor_hinge_pin(){
+		rotate([90, 0, 0])
+			cylinder(
+				r = 5 / 2,
+				h = 30,
+				$fa = fa(5 / 2),
+				center = true);
+}
+
+module hinge_pull_relief(){
+	center_width = 2.5;
+	rotate_extrude(convexity = 3, $fa = fa(5)){
+		difference(){
+			translate([center_width / 2, - 5 / 8])
+				square(size = [center_width, 5 / 4], center = true);
+			translate([center_width, 0])
+				circle(
+					r = 2.5 / 2,
+					$fa = fa(2.5));
+		}
+	}
+}
+
+module end_piece(){
+	union(){
+		translate([0, -8, 0])
+			rotate([0,-40,0])
+				translate([0, 0, 40 / 2])
+					cube([15, 5, 40], center = true);
+		translate([0, -8, 0])
+			rotate([90,-40,0])
+				translate([0, 40,0])
+					cylinder(
+						r = 15 / 2,
+						h = 5,
+						$fa = fa(15 / 2),
+						center = true);
+	}
+}
+
+module flybar_hinge_side(){
+	difference(){
+		union(){
+			translate([0, -8, 0])
+				rotate([-90,0,0])
+					cylinder(
+						r = 15 / 2,
+						h = 5,
+						$fa = fa(15 / 2),
+						center = true);
+			translate([-7.5, -10.5, 0])
+				rotate([-90,0,0])
+					trapezoid(15, 10, 25, 5);
+				end_piece();
+				}
+				union(){
+				translate([0, -8, 0])
+					rotate([90,-40,0])
+						translate([0, 40,0])
+							rotate([0,90,0]){
+								cylinder(
+									r = 2.5 / 2,
+									h = 20,
+									$fa = fa(5),
+									center = true);
+								translate([0,0,-6.26])
+								hinge_pull_relief();
+							}
+				}
+		}
+}
+
+module Prop_P1_hinge(){
+	color("Blue"){
+		render(){
+			translate(prop_joint_position){
+				difference(){
+					union(){
+						translate([-0.5, 0, -25])
+							cylinder(
+								r = 15 / 2,
+								h = 20,
+								$fa = fa(15 / 2),
+								center = true);
+						flybar_hinge_side();
+						mirror([0,1,0])
+							flybar_hinge_side();
+					}
+					union(){
+						translate([-0.5, 0, -25 - 5])
+							cylinder(
+								r = 10 / 2,
+								h = 20,
+								$fa = fa(15 / 2),
+								center = true);
+						translate([-0.5, 0, -25 - 5])
+							rotate([90, 0, 0])
+								cylinder(
+									r = 5 / 2,
+									h = 30,
+									$fa = fa(5 / 2),
+									center = true);
+						flight_motor_hinge_pin();
+					}
+				}
+			}
+		}
+	}
+}
+
 module propulsion_system(){
 
-	//hole_cover();
+	//flight_motor_hinge_pin();
+
+	translate(prop_joint_position){
+		translate([-16, -40, -45])
+			rotate([-90,-125,0]){
+				translate([-15,0,28])
+					color("Salmon") cylinder(
+						r = 35.5 / 2,
+							h = 10,
+							$fa = fa(35.5 / 2),
+							center = true);
+				color("Crimson") TGY_4805_2PA();
+			}
+	}
 
 	prop_spacing = 34.15;
 	blade_length = 190.4;
 
-	color("Black"){
-		translate([175.5,0,32.5]){
-			cylinder(
-				h = 225,
-				r = 10 / 2,
-				$fn = radial_resolution,
-				center = true);
-		}
-	}
+	rotate_about(prop_joint_position, [0, arm_angle, 0]){
 
-	translate([174.5, 0,-110]){
-		rotate([0,-90,180]){
-			color("DimGray") MN5212();
-			color("Black"){
-				rotate([0,0,prop_angle]){
-					translate([blade_length / 2, - prop_spacing / 2,16.5])
-						translate([-blade_length / 2,0,0])
-						rotate([0,0,blade_1_angle])
-						translate([blade_length / 2,10,0])
-						cube([blade_length, 40, 2.5], center = true);
-					translate([blade_length / 2, prop_spacing / 2,16.5])
-						translate([-blade_length / 2,0,0])
-						rotate([0,0,blade_2_angle])
-						translate([blade_length / 2,10,0])
-						cube([blade_length, 40, 2.5], center = true);
+		Prop_P1_hinge();
+
+		color("Black"){
+			translate([175.5,0,32.5 - 8]){
+				cylinder(
+					h = 200,
+					r = 10 / 2,
+					$fn = radial_resolution,
+					center = true);
+			}
+		}
+
+		translate([184.5, 0,-110]){
+			rotate([0,-90,180]){
+				color("DimGray") MN5212();
+				color("Black"){
+					rotate([0,0,prop_angle]){
+						translate([blade_length / 2, - prop_spacing / 2,16.5])
+							translate([-blade_length / 2,0,0])
+							rotate([0,0,blade_1_angle])
+							translate([blade_length / 2,10,0])
+							cube([blade_length, 40, 2.5], center = true);
+						translate([blade_length / 2, prop_spacing / 2,16.5])
+							translate([-blade_length / 2,0,0])
+							rotate([0,0,blade_2_angle])
+							translate([blade_length / 2,10,0])
+							cube([blade_length, 40, 2.5], center = true);
+					}
 				}
 			}
 		}
@@ -2201,7 +2386,7 @@ module Door_P7_middle_door_brace(){
 
 }
 module Door_P8_middle_door_bumper(){
-	{
+	render(){
 		intersection(){
 			difference(){
 				translate([237, -56.25, 0])
@@ -2217,9 +2402,170 @@ module Door_P8_middle_door_bumper(){
 	}
 }
 
-		translate([150,130,25])
-			rotate([180,0,180])
-				color("Magenta") render() HS_5065MG();
+module Door_P11_door_edge_brace(angle){
+
+	rotate([angle, 0, 0]){
+		color("Orange"){
+			render(){
+				intersection(){
+					union(){
+						intersection(){
+							translate([185, 0, 150])
+								rotate([0, -40, 0])
+									union(){
+										translate([0, 0, -5])
+											cube([10, 10, 20], center = true);
+										translate([0, 0, 5])
+											rotate([90, 0, 0])
+												cylinder(
+													h = 10,
+													r = 10 / 2,
+													$fa = fa(10 / 2),
+													center = true);
+									}
+							sphere(
+								r = body_radius - 10,
+								$fa = fa(body_radius - 10));
+						}
+						intersection(){
+							translate([185, 0, 150])
+								rotate([0, -40 - 90, 0]){
+									translate([-15, 0, -2.5])
+										cylinder(
+											h = 15,
+											r = 10 / 2,
+											$fa = fa(10 / 2),
+											center = true);
+										translate([-5, 0, 0])
+											cube([20, 10, 10], center = true);
+								}
+							rotate([0,90,0])
+								cylinder(
+									h = body_radius * 2,
+									r = body_circle_radius,
+									$fa = fa(body_circle_radius),
+									center = true);
+							}
+					}
+					sphere(
+						r = body_radius - 7.5,
+						$fa = fa(body_radius - 7.5));
+				}
+			}
+		}
+	}
+}
+
+module Door_P12_door_edge_bumper(angle){
+
+	rotate([angle, 0, 0]){
+		color("Chocolate"){
+			render(){
+				difference(){
+					intersection(){
+						translate([185, 0, 150])
+							rotate([0, -40 - 90, 0])
+								translate([-15, 0, -5])
+									cylinder(
+										h = 15,
+										r = 10 / 2,
+										$fa = fa(10 / 2),
+										center = true);
+						sphere(
+							r = body_radius - 5,
+							$fa = fa(body_radius - 5));
+					}
+					sphere(
+						r = body_radius - 7.5,
+						$fa = fa(body_radius - 7.5));
+				}
+			}
+		}
+	}
+}
+
+module Prop_P2_motor_mount(){
+	color("SpringGreen"){
+		render(){
+			translate([163.75, 0, -110]){
+				difference(){
+					union(){
+						translate([- 5 / 2, - 44 / 2, 20 - 44 / 2])
+							rotate([90, 0, 90])
+								trapezoid(44, 20, 39.5, 5);
+						hull(){
+							translate([2.5, - 20 / 2, 40 - 5 / 2])
+								rotate([180, 0, 90])
+									trapezoid(20, 15, 11.75 - 2.5, 0.01);
+							translate([2.5, - 26 / 2, 40 - 5 / 2 - 10])
+								rotate([180, 0, 90])
+									trapezoid(26, 15, 11.75 - 2.5, 0.01);
+						}
+
+						translate([11.75, 0, 40])
+							cylinder(
+								h = 15,
+								r = 15 / 2,
+								$fa = fa(15 / 2),
+								center = true);
+						rotate([0, 90, 0])
+							cylinder(
+								h = 5,
+								r = 44 / 2,
+								$fa = fa(44 / 2),
+								center = true);
+					}
+					union(){
+						for(i = [0:90:270])
+							rotate([i, 0, 0])
+								translate([0, 25 / 2, 0])
+									rotate([0,90,0])
+									cylinder(
+										h = 10,
+										r = 3 / 2,
+										$fa = fa(3 / 2),
+										center = true);
+						for(i = [0:90:270])
+							rotate([i, 0, 0])
+								translate([-1.75 - 0.025, 25 / 2, 0])
+									rotate([0,90,0])
+									cylinder(
+										h = 1.5,
+										r1 = 6 / 2,
+										r2 = 3 / 2,
+										$fa = fa(3 / 2),
+										center = true);
+						translate([11.75, 0, 40 - 12.5])
+							scale([1.85, 1, 1])
+							rotate([90, 0, 0])
+								cylinder(
+									h = 30,
+									r = 10 / 2,
+									$fa = fa(20 / 2),
+									center = true);
+						translate([11.75, 0, 42.5])
+							cylinder(
+								h = 10.1,
+								r = 10 / 2,
+								$fa = fa(10 / 2),
+								center = true);
+						translate([11.75, 0, 42.5])
+							rotate([90, 0, 0])
+								cylinder(
+									h = 20,
+									r = 5 / 2,
+									$fa = fa(10 / 2),
+									center = true);
+					}
+				}
+			}
+		}
+	}
+}
+
+translate([150,130,25])
+	rotate([180,0,180])
+		color("Magenta") render() HS_5065MG();
 
 module body_assembly(){
 
@@ -2244,6 +2590,20 @@ module body_assembly(){
 		}
 	}
 }
+
+Prop_P2_motor_mount();
+
+Door_P11_door_edge_brace(-45);
+Door_P12_door_edge_bumper(-45);
+
+Door_P11_door_edge_brace(-15);
+Door_P12_door_edge_bumper(-15);
+
+Door_P11_door_edge_brace(15);
+Door_P12_door_edge_bumper(15);
+
+Door_P11_door_edge_brace(45);
+Door_P12_door_edge_bumper(45);
 
 //color("Cyan") Door_P6_servo_lever();
 
@@ -2293,8 +2653,5 @@ Fan Fold Sequence
 8. fold in arms
 9. fold right door
 */
-/*
-rotate_about([176, 0, 145], [0,arm_angle,0]){
-	propulsion_system();
-}
-*/
+
+propulsion_system();
