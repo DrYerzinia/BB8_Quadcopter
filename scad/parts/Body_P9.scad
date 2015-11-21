@@ -4,4 +4,5 @@ include <../render_settings.scad>
 
 use <../BB8.scad>
 
-Body_P9();
+rotate([90, 0, 0])
+	Body_P9();

@@ -1,7 +1,7 @@
 // Author Michael Marques (DrYerzinia)
 
 include <../render_settings.scad>
-
 use <../BB8.scad>
 
-Door_P4();
+rotate([90, 0, 0])
+	Door_P4();

@@ -4,4 +4,4 @@ include <../render_settings.scad>
 
 use <../BB8.scad>
 
-rotate([0, 180, 0]) Door_P3();
+Body_P16_door_servo_mount();

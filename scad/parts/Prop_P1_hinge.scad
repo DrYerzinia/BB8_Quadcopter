@@ -4,4 +4,4 @@ include <../render_settings.scad>
 
 use <../BB8.scad>
 
-rotate([0, 180, 0]) Door_P3();
+rotate([0,0,0]) Prop_P1_hinge();

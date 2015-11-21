@@ -4,4 +4,6 @@ include <../render_settings.scad>
 
 use <../BB8.scad>
 
-Body_P13();
+rotate([0,90,0])
+	rotate([0,0,135 / 2])
+		Body_P13();

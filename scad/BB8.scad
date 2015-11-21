@@ -11,7 +11,7 @@ $fs = 0.01;
 $fn = undef;
 $fa = 360 / 5;
 
-$fe = 0.1;		// preview
+//$fe = 0.1;		// preview
 //$fe = 0.025;	// export
 
 use <utils.scad>
@@ -408,8 +408,8 @@ module Body_P8(){ // make me
 		intersection(){
 			inner_segment();
 			//slice_2(25);
-						translate([150, 40+30, 35 + 25 + section_length])
-								cube([section_length,section_length-60,section_length], center = true);
+			translate([150, 40+30, 35 + 25 + section_length])
+				cube([section_length,section_length-60,section_length], center = true);
 		}
 	}
 }
@@ -756,12 +756,92 @@ module Body_P6(){ // make me
 	}
 }
 
+module Body_P15(){
+
+	Body_P6();
+	Body_P16_door_servo_mount();
+
+}
+
+module Body_P16_door_servo_mount(){
+
+	servo_height = 6;
+
+	hole_diameter = 2;
+	hole_spacing = 28.32;
+	hole_spacing_2 = 27;
+	hole_2_wide = 6;
+	depth = 20.32;
+	wing_thick = 2;
+	mh_rad = hole_diameter / 2;
+	lift = 18.3;
+
+	module holes(){
+		translate(
+			[
+				hole_spacing / 2,
+				0,
+				lift - 12 / 2
+			])
+			cylinder(h = 12, r = mh_rad, $fa = fa(mh_rad), center = true);
+		translate(
+			[
+				hole_spacing_2 / 2,
+				hole_2_wide / 2,
+				lift - 12 / 2
+			])
+			cylinder(h = 12, r = mh_rad, $fa = fa(mh_rad), center = true);
+		translate(
+			[
+				hole_spacing_2 / 2,
+				- hole_2_wide / 2,
+				lift - 12 / 2
+			])
+			cylinder(h = 12, r = mh_rad, $fa = fa(mh_rad), center = true);
+	}
+
+	module servo_mount(){
+		translate([139, 135, 0]){
+			difference(){
+				union(){
+					translate([0, - 2, 5 + lift - servo_height / 2])
+						cube([4, 16, servo_height], center = true);
+					translate([0, 4, 5 + lift / 2])
+						cube([4, 4, lift], center = true);
+					translate([28.25 - 0.3, - 7 / 2, 5 + lift - servo_height / 2])
+						cube([4, 13, servo_height], center = true);
+					translate([28.25 - 0.3, 3, 5 + lift / 2])
+						cube([4, 4, lift], center = true);
+					translate([28.25 - 25 / 2, 3, 5 + 4 / 2])
+						cube([29 - 0.6, 4, 4], center = true);
+				}
+				union(){
+					translate([14, -5,8]){
+						holes();
+						mirror() holes();
+					}
+				}
+			}
+		}
+	}
+
+	render(){
+		servo_mount();
+		mirror([1, -1, 0])
+			servo_mount();
+	}
+}
+
 module Body_P7(){ // make me
 	render(){
 		difference(){
 			union(){
 					shell_slice_7();													// 12
 					shell_slice_8();													// 13
+					intersection(){
+						outer_segment();													// 13
+						upper_binding_slice();
+					}
 			}
 			union(){
 				rotate([-35,70,00]) magnet_hole();
@@ -789,9 +869,16 @@ module Body_P9(){ // make me
 				rotate([-11,40,00]) magnet_hole();
 				rotate([-18,38,00]) magnet_hole();
 				rotate([-24,35,00]) magnet_hole();
+				upper_binding_slice();
 			}
 		}
 	}
+}
+
+module upper_binding_slice(){
+translate([120, 120, 190])
+	rotate([0, 0, 45])
+		cube([50, 50, 50], center = true);
 }
 
 module Body_P11(){ // make me
@@ -807,18 +894,19 @@ module Body_P11(){ // make me
 				rotate([-39.5,13.5,00]) magnet_hole();
 				rotate([-36.5,21,00]) magnet_hole();
 				rotate([-31.5,28,00]) magnet_hole();
+				upper_binding_slice();
 			}
 		}
 	}
 }
 
 module magnet_hole(){
-
+/*
 	translate([0,0,250-1.5])
 		cylinder(
 			h=3,
 			r = 6.35 / 2,
-			$fa = fa(6.35 / 2));
+			$fa = fa(6.35 / 2));*/
 
 }
 
@@ -876,903 +964,29 @@ module lip_holes(){
 	M5_hole(110, 170+7.5);
 }
 
-module fan_assembly(){
-
-	// MN5212-KV420
-	module prop_motor(){
-
-		blade_rotation = 0;
-
-		color("DimGray") MN5212();
-
-		color("LightGrey") render(){
-			translate([0,0, 42.5 / 2 + 8 / 2 - 6])
-				cylinder(h = 8, r = 24.5 / 2, center = true);
-			translate([0,0, 42.5 / 2 + 21 / 2 - 6 + 8])
-				cylinder(h = 21, r = 8 / 2, center = true);
-		}
-
-		color("Black") render(){
-			rotate([0,0,0 + blade_rotation])
-				translate([254/4,0, 42.5 / 2 + 10 / 2 + 2])
-					cube([254/2, 20, 10], center = true);
-			rotate([0,0,120 + blade_rotation])
-				translate([254/4,0, 42.5 / 2 + 10 / 2 + 2])
-					cube([254/2, 20, 10], center = true);
-			rotate([0,0,240 + blade_rotation])
-				translate([254/4,0, 42.5 / 2 + 10 / 2 + 2])
-					cube([254/2, 20, 10], center = true);
-		}
-
-	}
-
-	// Lumenier 10Ah 6s 25c Lipo Battery
-	module battery_pack(){
-		cube([172, 70, 48], center = true);
-	}
-
-	module motor_mount(){
-
-		rotate([0,0,0]){
-			rotate([90, 0, 0])
-				difference(){
-					linear_extrude(
-						height = 24.8 + 8,
-						center = true,
-						convexity = 2
-						)
-						pie_slice(243.95, 24, 31.25, radial_resolution);
-						//pie_slice(243.95, 4.7, 37.7, radial_resolution);
-					linear_extrude(
-						height = 24.8 + 8 + 1,
-						center = true,
-						convexity = 2
-						)
-						pie_slice(238.95, 4.7, 55, radial_resolution);
-				}
-
-		}
-
-	}
-
-	module tbar_servos_latch(){
-
-		translate([143,-65,125])
-			rotate([-90,0,0]){
-				color("Magenta") render() parallax_continuous_rotation_servo();
-				color("Indigo") render() round_servo_attachment();
-				color("Purple"){
-					render(){
-						translate_shaft(){
-							translate([0,0,9]){
-								cylinder(h=2.5, r=12, center = true);
-								translate([0,0,5])
-									cylinder(h=7.5, r=10, center = true);
-								translate([0,0,10])
-									cylinder(h=2.5, r=12, center = true);
-							}
-						}
-					}
-				}
-			}
-
-		dist = 
-			sqrt(
-				pow((cos(latch_angle) - 1) * -8, 2)
-			+ pow((sin(-latch_angle) + 1) * 12.7, 2)
-			) - 3.5;
-
-		translate([153,-55,154])
-			rotate([180,0,0]){
-				color("Magenta") render() ls_0006_servo();
-				translate_ls_0006_attachment()
-					rotate([0,0,latch_angle])
-						color("Indigo") render() bar_attachment();
-			}
-
-		// Motor Mount Latch
-		translate([0,dist,0]){
-			color("Red"){
-				render(){
-					union(){
-						translate([171, -27, 141])
-							rotate([90,0,0])
-								cylinder(
-									h = 20,
-									r = 2.5,
-									$fn = radial_resolution / 4,
-									center = true);
-						translate([171, -17, 141])
-							sphere(r = 2.5, $fn = radial_resolution / 4 );
-					}
-				}
-			}
-		}
-
-	}
-
-	module slide_bearing_hole(ang){
-		translate([118, -17, 138.1])
-			rotate([90,0,ang]){
-				cylinder(h=17,r= 3/2, $fn = radial_resolution/4, center=true);
-				translate([0,0,-2.26])
-					cylinder(h = 1.5, r2 = 3/2, r1 = 6/2, $fn = radial_resolution/4, center=true);
-			}
-	}
-
-	module slide_bearing_holes(first, ang){
-		if(first) slide_bearing_hole(ang);
-		translate([20,0,0]) slide_bearing_hole(ang);
-		translate([42.5,0,0]) slide_bearing_hole(ang);
-	}
-
-	module slide_bearing_holder(){
-			translate([118, -18, 138.1])
-				rotate([90,0,0])
-					cylinder(h=8,r= 8/2, $fn = radial_resolution/4, center=true);
-	}
-
-	module slide_bearing_holders(first){
-			if(first) slide_bearing_holder();
-			translate([20,0,0]) slide_bearing_holder();
-			translate([42.5,0,0]) slide_bearing_holder();
-	}
-
-	module slide_bearing_slot(angle){
-		translate([118, -18, 138.6])
-			rotate([angle,0,0])
-				cube([8, 2 + 0.5 * 2 + 1, 8], center = true);
-	}
-
-	module slide_bearing_slots(angle, last){
-		if(last)
-			slide_bearing_slot(angle);
-		translate([20, 0, 0])
-			slide_bearing_slot(angle);
-		translate([42.5, 0, 0])
-			slide_bearing_slot(angle);
-
-	}
-
-	module slide_bearing_nut(){
-		translate([118, -22, 138.1]){
-			rotate([90,0,0])
-				cylinder(h = 1.8,r= 6.35 / 2, $fn = 6, center=true);
-			translate([0,0,6.35 / 2])
-				cube([6.35, 1.8, 6.35], center = true);
-		}
-	}
-
-	module slide_bearing_nuts(first){
-
-		if(first) slide_bearing_nut();
-		translate([20,0,0]) slide_bearing_nut();
-		translate([42.5,0,0]) slide_bearing_nut();
-
-	}
-
-	module side_slide_bearing_nut(){
-		translate([158, 7 + 6.35 / 2, 118.6])
-			rotate([90,0,0])
-				cube([6.35, 1.8, 6.35], center = true);
-		translate([158, 7, 118.6])
-			rotate([0,0,0])
-				cylinder(h = 1.8, r = 6.35 / 2, $fn = 6, center = true);
-	}
-
-	module side_slide_bearing_hole(){
-		translate([138, 8.5, 123.6]){
-			cylinder(h = 10, r = 3 / 2, $fn = radial_resolution / 4, center = true);
-			translate([0,0,4.2])
-				cylinder(
-					h = 1.5,
-					r1 = 3/2,
-					r2 = 6/2,
-					$fn = radial_resolution/4,
-					center=true);
-			}
-	}
-
-	module side_slide_bearing_holder(){
-		translate([138, 8.5, 122])
-			cylinder(h =10, r = 7 / 2, $fn = radial_resolution / 4, center = true);
-	}
-
-	module side_slide_bearing_holders(){
-		side_slide_bearing_holder();
-		translate([20,0,0]) side_slide_bearing_holder();
-	}
-
-	module side_slide_bearing_holes(){
-		side_slide_bearing_hole();
-		translate([20,0,0]) side_slide_bearing_hole();
-	}
-
-	module slide_bearing_washer(){
-		color("White"){
-			translate([0,0,1 + 0.25 + 0.1])
-				washer_M3_7x3_2x0_5mm();
-			translate([0,0, - 1 - 0.25 - 0.1])
-				washer_M3_7x3_2x0_5mm();
-		}
-		color("Blue")
-			bearing_3x7x2mm();
-	}
-
-	module slide_bearing_top(angle){
-		translate([118, -18, 138.1])
-			rotate([90-angle,0,angle])
-				slide_bearing_washer();
-	}
-
-	module slide_bearings_top(angle, last){
-		if(last)
-			slide_bearing_top(angle);
-		translate([20, 0, 0])
-			slide_bearing_top(angle);
-		translate([42.5, 0, 0])
-			slide_bearing_top(angle);
-	}
-
-	module slide_bearings(){
-
-		slide_bearings_top(0, true);
-		mirror([0,1,0]) slide_bearings_top(0, true);
-		translate([0,0,-12.2]) slide_bearings_top(0);
-		mirror([0,1,0]) translate([0,0,-12.2]) slide_bearings_top(0);
-		translate([0,9.5,-16]) slide_bearings_top(90);
-		mirror([0,1,0]) translate([0,9.5,-16]) slide_bearings_top(90);
-
-	}
-
-	// Motor Mount Slide
-	module motor_mount_slide(){
-		intersection(){
-			difference(){
-				union(){
-
-					translate([132,0,123])
-							cube([65,17,26], center = true);
-					translate([132,0,132])
-							cube([65,50,15], center = true);
-
-					// joint latch
-					translate([171,-17,140])
-						cube([25,6,10], center = true);
-					translate([171, 17,140])
-						cube([25,6,10], center = true);
-
-					// Outer Sphere Connector
-					translate([178.5,-17,150])
-						cube([10,6,25], center = true);
-					translate([178.5, 17,150])
-						cube([10,6,25], center = true);
-
-					translate([166.5, -62.5,155])
-						cube([5,5,15], center = true);
-
-					// Servo Mounts
-					translate([118, -38.5,120])
-						cube([9,30,20], center = true);
-					translate([118,-38.5,130])
-						rotate([90,0,0])
-							cylinder(
-								h = 30,
-								r = 4.5,
-								$fn = radial_resolution/ 4,
-								center = true);
-
-					translate([168, -48.5,120])
-						cube([7,10,20], center = true);
-					translate([141.5, -48.5,112.5])
-						cube([60,10,5], center = true);
-					translate([168,-48.5,130])
-						rotate([90,0,0])
-							cylinder(
-								h = 10,
-								r = 3.5,
-								$fn = radial_resolution / 4,
-								center = true);
-					translate([168,-48.5,120])
-						rotate([90,0,0])
-							cylinder(
-								h = 10,
-								r = 3.5,
-								$fn = radial_resolution / 4,
-								center = true);
-					translate([118, -48.5,137.75])
-						cube([9,10,20], center = true);
-					translate([130, -48.5,142.75])
-						cube([25,10,10], center = true);
-					translate([137.5, -55, 142.75])
-						cube([10,20,10], center = true);
-					translate([153, -63,145.25])
-						cube([29,4,5], center = true);
-					translate([147, -63,140.25])
-						cube([10,4,10], center = true);
-					translate([166.5, -57.5,145.25])
-						cube([5,15,5], center = true);
-
-					// Bearing holders
-					slide_bearing_holders(true);
-					mirror([0,1,0]) slide_bearing_holders(true);
-					translate([0,0,-12.2]){
-						slide_bearing_holders();
-						mirror([0,1,0]) slide_bearing_holders();
-					}
-
-					side_slide_bearing_holders();
-					mirror([0,1,0]) side_slide_bearing_holders();
-
-				}
-				union(){
-					translate([132,0,123])
-							cube([66,9,18], center = true);
-					translate([132,0,132])
-							cube([66,42,7], center = true);
-					translate([132,0,142])
-							cube([66,28,20], center = true);
-					sphere(
-						r = internal_radius,
-						$fn=radial_resolution);
-					}
-
-					// Servo Mount Holes
-					translate([153,-55,145.5])
-						rotate([180,0,0]){
-							translate([25.4 / 2,0,0])
-								cylinder(h = 6, r = 1 / 2, center = true);
-							translate([-25.4 / 2,0,0])
-								cylinder(h = 6, r = 1 / 2, center = true);
-						}
-
-					translate([143,-48,125])
-						rotate([-90,0,0]){
-							translate([50.75 / 2,-5,0])
-								cylinder(h = 12, r = 1.6 / 2, center = true);
-							translate([-50.75 / 2,-5,0])
-								cylinder(h = 12, r = 1.6 / 2, center = true);
-							translate([50.75 / 2,5,0])
-								cylinder(h = 12, r = 1.6 / 2, center = true);
-							translate([-50.75 / 2,5,0])
-								cylinder(h = 12, r = 1.6 / 2, center = true);
-						}
-
-					// Bearing slots
-					slide_bearing_slots(0, true);
-					mirror([0,1,0]) slide_bearing_slots(0, true);
-					translate([0,0,-13.2]) slide_bearing_slots(0);
-					mirror([0,1,0])	translate([0,0,-13.2])
-						slide_bearing_slots(0);
-					translate([0,9,-16.5]) slide_bearing_slots(90);
-					mirror([0,1,0]) translate([0,9,-16.5])
-						slide_bearing_slots(90);
-
-					// Bearing Nuts
-					slide_bearing_nuts(true);
-					mirror([0,1,0]) slide_bearing_nuts(true);
-
-					translate([0,8,-12.2])
-						slide_bearing_nuts();		
-					translate([0,-8,-12.2])
-						mirror([0,1,0]) slide_bearing_nuts();
-
-					side_slide_bearing_nut();
-					translate([-20,0,0]) side_slide_bearing_nut();
-					mirror([0,1,0]){
-						side_slide_bearing_nut();
-						translate([-20,0,0]) side_slide_bearing_nut();
-					}
-
-					slide_bearing_holes(true);
-					mirror([0,1,0]) slide_bearing_holes(true);
-					side_slide_bearing_holes();
-					mirror([0,1,0]) side_slide_bearing_holes();
-
-					translate([0,-5.1,-12.2])
-						slide_bearing_holes(false, 180);
-					translate([0,5.1,-12.2])
-						mirror([0,1,0]) slide_bearing_holes(false, 180);
-
-					// Endstop Slot
-						translate([145,0,116])
-							cube([32.5,40,2], center = true);
-					// joint latch hole
-					translate([171,0,141])
-						rotate([90,0,0])
-							cylinder(
-								h = 50,
-								r = 2.5,
-								$fn = radial_resolution / 4,
-								center=true);
-			}
-			sphere(
-        r = body_radius - body_shell_thickness,
-				$fn = radial_resolution);
-		}
-	}
-
-	module motor_mount_tbar(){
-
-		translate([extension, 0, 0]){
-			render(){
-				difference(){
-					union(){
-						// T-Bar
-						translate([132,0,123])
-							cube([70,7,16], center = true);
-						difference(){
-							translate([132,0,123])
-								cube([85,7,16], center = true);
-							translate([170,0,131])
-								rotate([0,-30,0])
-									translate([0,0,-10])
-										cube([10,10,40], center = true);
-						}
-						translate([132.5,0,132])
-							cube([65,40,5], center = true);
-
-						// Bar holder
-						translate([175,5,131])
-							cube([20,4,32], center = true);
-						// Bar holder left
-						translate([175,-5,131])
-							cube([20,4,32], center = true);
-						// Endstop
-						translate([130.25,0,116])
-							cube([2.5,18,2], center = true);
-					}
-					union(){
-						sphere(
-							r = internal_radius,
-							$fn=radial_resolution);
-						translate(hinge_point)
-							translate([0,0,0])
-								rotate([90,0,0])
-									cylinder(
-										h = 50,
-										r = 5 / 2,
-										$fn = radial_resolution / 4,
-										center=true);
-						translate(hinge_point_3)
-							translate([0,0,0])
-								rotate([90,0,0])
-									cylinder(
-										h = 50,
-										r = 5 / 2,
-										$fn = radial_resolution / 4,
-										center=true);
-						// counter sink
-						translate(hinge_point_3)
-							translate([0,7 - 1.25 + 0.1,0])
-								rotate([90,0,0])
-									cylinder(
-										h = 2.5,
-										r1 = 5,
-										r2 = 5 / 2,
-										$fn = radial_resolution / 4,
-										center=true);
-						// bolt recesse sink
-						translate(hinge_point_3)
-							translate([0,-7,0])
-								rotate([90,0,0])
-									cylinder(
-										h = 2.7 * 2,
-										r = 8.8 / 2,
-										$fn = 6,
-										center=true);
-					}
-				}
-			}
-		}
-	}
-
-	module tbar_assembly(){
-
-		color("Lime") render() motor_mount_slide();
-		color("Cyan") motor_mount_tbar();
-		slide_bearings();
-		tbar_servos_latch();
-
-	}
-
-	module bars_motor_mount(){
-
-		shifted_hp = [hinge_point[0] + extension, hinge_point[1], hinge_point[2]];
-		shifted_hp_3 = [hinge_point_3[0] + extension, hinge_point_3[1], hinge_point_3[2]];
-
-		bar_thickness = 15;
-
-		angle = -67.2 - hinge_angle;
-		r = 15;
-		R = 125.7; // Inner Bar Length
-		r3 = 131.3;
-
-		p2 = 
-			[
-				shifted_hp[0] + r3 * cos(angle),
-				0,
-				shifted_hp[2] + r3 * sin(angle)
-			];
-
-		d =
-			sqrt(
-				pow(p2[0] - shifted_hp_3[0], 2) +
-				pow(p2[2] - shifted_hp_3[2], 2)
-			);
-
-		echo("d=", d, ", r=", r, "R=", R);
-
-		x = (pow(d, 2) - pow(r, 2) + pow(R, 2)) / (2 * d);
-		y = sqrt(
-					(
-						4 * pow(d, 2) * pow(R, 2)
-						- pow(
-								pow(d, 2)
-							- pow(r, 2)
-							+ pow(R, 2),
-							2)
-					) / (4 * pow(d, 2))
-				);
-
-		angle2 =
-			atan2(
-				shifted_hp_3[2] - p2[2],
-				shifted_hp_3[0] - p2[0]
-			) + 180;
-
-		echo("angle2=", angle2);
-
-		// rotate points
-		x2 = x * cos(angle2) - y * sin(angle2);
-		y2 = x * sin(angle2) + y * cos(angle2);
-
-		// shift points
-
-		x3 = x2 + shifted_hp_3[0];
-		y3 = y2 + shifted_hp_3[2];
-
-		echo("x=", x3, " y=", y3);
-
-		p3 = 
-			[
-				x3,
-				0,
-				y3
-			];
-
-		// inner bar angle
-		angle3 = atan2(
-				shifted_hp_3[0] - p3[0],
-				shifted_hp_3[2] - p3[2]
-			) - 90;
-		/*len3 =
-			sqrt(
-				pow(p3[0] - shifted_hp_3[0], 2) +
-				pow(p3[2] - shifted_hp_3[2], 2)
-			);*/
-
-		echo("angle3=", angle3);
-
-		// short bar
-		angle4 = atan2(
-				p2[0] - p3[0],
-				p2[2] - p3[2]
-			) - 90;
-		len4 =
-			sqrt(
-				pow(p3[0] - p2[0], 2) +
-				pow(p3[2] - p2[2], 2)
-			);
-
-		// dual bar
-		angle5 = atan2(
-				shifted_hp[0] - p2[0],
-				shifted_hp[2] - p2[2]
-			) - 90;
-		/*len5 =
-			sqrt(
-				pow(hinge_point[0] - p2[0], 2) +
-				pow(hinge_point[2] - p2[2], 2)
-			);*/
-
-		echo("angle5=", angle5);
-
-		module inner_bar(){
-
-			translate(shifted_hp_3){
-				rotate([0,angle3,0]){
-					render(){
-						difference(){
-							union(){
-
-								translate([-R / 2,0,0])
-									cube([R,5,bar_thickness], center = true);
-
-								rotate([90,0,0])
-									cylinder(
-										h = 5,
-										r = bar_thickness / 2,
-										$fn = radial_resolution / 2,
-										center = true);
-
-								translate([-R,0,0])
-									rotate([90,0,0])
-										cylinder(
-											h = 5,
-											r = bar_thickness / 2,
-											$fn = radial_resolution / 2,
-											center = true);
-							}
-							union(){
-								rotate([90,0,0])
-									cylinder(
-										h= 6,
-										r = 2.5,
-										$fn = radial_resolution / 4,
-										center = true);
-
-								translate([-R,0,0])
-									rotate([90,0,0])
-										cylinder(
-											h = 6,
-											r = 2.5,
-											$fn = radial_resolution / 4,
-											center = true);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		module dual_bar(hinge_point, p2, angle5, x_off){
-
-			lever_len = 47;
-			dual_bar_angle = 167.7;
-
-			translate([extension,x_off,0] + hinge_point){
-				rotate([0,angle5,0]){
-					render(){
-						difference(){
-							union(){
-								rotate([0,dual_bar_angle, 0])
-									translate([-lever_len / 2, 0,0])
-										cube([lever_len, 5, bar_thickness], center = true);
-									translate([-r3 / 2, 0,0])
-										cube([r3, 5, bar_thickness], center = true);
-									rotate([90,0,0])
-										cylinder(
-											h = 5,
-											r = bar_thickness / 2,
-											$fn = radial_resolution / 2,
-											center = true);
-								translate([-r3, 0, 0])
-									rotate([90,0,0])
-										cylinder(
-											h = 5,
-											r = bar_thickness / 2,
-											$fn = radial_resolution / 2,
-											center = true);
-
-								rotate([0,dual_bar_angle,0])
-									translate([-lever_len,0,0])
-										rotate([90,0,0])
-											cylinder(
-												h = 5,
-												r = bar_thickness / 2,
-												$fn = radial_resolution / 2,
-												center = true);
-
-							}
-							union(){
-								rotate([90,0,0])
-									cylinder(
-										h = 6,
-										r = 2.5,
-										$fn = radial_resolution / 4,
-										center = true);
-
-								rotate([0,dual_bar_angle,0])
-									translate([-lever_len,0,0])
-										rotate([90,0,0])
-											cylinder(
-												h = 6,
-												r = 2.5,
-												$fn = radial_resolution / 4,
-												center = true);
-
-								translate([-r3,0,0])
-									rotate([90,0,0])
-										cylinder(
-											h = 6,
-											r = 2.5,
-											$fn = radial_resolution / 4,
-											center = true);
-
-								// joint latch hole
-								rotate([0,dual_bar_angle,0])
-									translate([-32,0,-1])
-										rotate([90,0,0])
-											cylinder(
-												h = 50,
-												r = 2.5,
-												$fn = radial_resolution / 4,
-												center=true);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		module motor_fan(position, angle){
-
-			translate(position){
-				rotate([0,angle+180,0]){
-					translate([4,0,-40]){
-						rotate([0,-90,0])
-							translate([0,0,20.8])
-								rotate([0,0,180])
-									prop_motor();
-					}
-				}
-			}
-		}
-
-		// Motor Bracket
-		module motor_bracket(position, position_2, angle){
-			translate(position){
-				rotate([0,angle + 180,0]){
-					render(){
-						difference(){
-							translate([4,0,-40]){
-								translate([-12.5, 0, 40])
-									difference(){
-										cube([30, 24.8 + 8, 19], center = true);
-										union(){
-											translate([0,0,2])
-												cube([31, 5, 20], center = true);
-											translate([0, 10,2])
-												cube([31, 5, 20], center = true);
-											translate([0,-10,2])
-												cube([31, 5, 20], center = true);
-										}
-									}
-								// Back Plate
-								difference(){
-									union(){
-										rotate([0, 90, 0])
-											cylinder(
-												h = 5,
-												r = (24.8 + 8) / 2,
-												center = true);
-										translate([0, 0, 30 / 2 + 0.5])
-											cube([5, 24.8 + 8, 31], center = true);
-									}
-									union(){
-										rotate([0, 90, 0]){
-											translate([0,   24.8 / 2, 0]){
-												cylinder(
-													h = 10,
-													r = 3 / 2,
-													$fn = radial_resolution / 4,
-													center = true);
-												translate([0, 0, 1.77])
-													cylinder(
-														h = 1.5,
-														r1 = 3 / 2,
-														r2 = 6/2,
-														$fn = radial_resolution / 4,
-														center = true);
-											}
-											translate([0, - 24.8 / 2, 0]){
-												cylinder(
-													h = 10,
-													r = 3 / 2,
-													$fn = radial_resolution / 4,
-													center = true);
-												translate([0, 0, 1.77])
-													cylinder(
-														h = 1.5,
-														r1 = 3 / 2,
-														r2 = 6 / 2,
-														$fn = radial_resolution / 4,
-														center = true);
-											}
-											translate([  24.8 / 2, 0, 0]){
-												cylinder(
-													h = 10,
-													r = 3 / 2,
-													$fn = radial_resolution / 4,
-													center = true);
-												translate([0, 0, 1.77])
-													cylinder(
-														h = 1.5,
-														r1 = 3 / 2,
-														r2 = 6/2,
-														$fn = radial_resolution / 4,
-														center = true);
-											}
-											translate([- 24.8 / 2, 0, 0]){
-												cylinder(
-													h = 10,
-													r = 3 / 2,
-													$fn = radial_resolution / 4,
-													center = true);
-												translate([0, 0, 1.77])
-													cylinder(
-														h = 1.5,
-														r1 = 3 / 2,
-														r2 = 6 /2,
-														$fn = radial_resolution / 4,
-														center = true);
-											}
-										}
-									}
-								}
-							}
-							union(){
-								// bar holes
-								rotate([90,0,0])
-									cylinder(
-										h = 40,
-										r = 2.5,
-										$fn = radial_resolution / 4,
-										center = true);
-								translate([-15,0,0])
-									rotate([90,0,0])
-										cylinder(
-											h = 40,
-											r = 2.5,
-											$fn = radial_resolution / 4,
-											center = true);
-								//hole_cover();
-							}
-						}
-					}
-				}
-			}
-		}
-
-		color("PaleGreen") inner_bar();
-
-		color("SteelBlue"){
-			dual_bar(hinge_point, p2, angle5, -10);
-			dual_bar(hinge_point, p2, angle5, 10);
-		}
-
-		color("Magenta") motor_bracket(p3, p2, angle4);
-		motor_fan(p3, angle4);
-
-	}
-
-	hinge_point = [173,0,142];
-	hinge_point_3 = [175.6, 0, 129.5];
-
-	tbar_assembly();
-	bars_motor_mount();
-
+// Lumenier 10Ah 6s 25c Lipo Battery
+module battery_pack(){
+	cube([172, 70, 48], center = true);
 }
 
-	module hole_cover(){
+module hole_cover(){
 
-		intersection(){
-			difference(){
-					sphere(
-						r = body_radius,
-						$fa = fa(body_circle_radius));
-					sphere(
-						r = body_radius - body_shell_thickness / 2,
-						$fa = fa(body_radius - body_shell_thickness / 2));
-				}
-				rotate([0,90,0])
-				cylinder(
-					h = body_radius * 2,
-					r = body_circle_radius,
+	intersection(){
+		difference(){
+				sphere(
+					r = body_radius,
 					$fa = fa(body_circle_radius));
-		}
+				sphere(
+					r = body_radius - body_shell_thickness / 2,
+					$fa = fa(body_radius - body_shell_thickness / 2));
+			}
+			rotate([0,90,0])
+			cylinder(
+				h = body_radius * 2,
+				r = body_circle_radius,
+				$fa = fa(body_circle_radius));
 	}
+}
 
 module rounded_hole_cover(){
 	rotate([0, 90, 0]){
@@ -1972,6 +1186,79 @@ module Door_P10_cover_slide_brace(){
 	}
 }
 
+module cslide(){
+
+	difference(){
+		union(){
+			r = 7.5 / 2;
+			cylinder(
+				h = 5,
+			r = r,
+				$fa = fa(r),
+				center = true);
+			translate([-6 / 2, 0, 0])
+				cube([6, 7.5, 5], center = true);
+
+			translate([-3 / 2 - 25 - 6 - 1.75, 0, 2.75])
+				cube([6, 8, 10.5], center = true);
+
+			translate([-4, -8 + 8 / 2, 0])
+				cube([4, 12 - 8, 4], center = true);
+			translate([-20 + 4, -6 + 5.5, 6])
+				cube([4 + 2, 18 - 11, 4], center = true);
+			//translate([-20, -13, 6 - 10])
+			//	cube([4, 4, 20], center = true);
+			translate([-4 - 8/2, -13 + 5, 6 - 10])
+				cube([4+8, 4, 12+12], center = true);
+			translate([-12 + 2, -13 + 10, 0 + 6])
+				cube([20 - 12, 4 + 8, 4], center = true);
+			translate([-26, 0, 6])
+				cube([16, 8, 4], center = true);
+		}
+
+		union(){
+
+			r2 = 2.5 / 2;
+			translate([-25 / 2 - 6 - 2.5, 1.75, 0])
+				rotate([0, 90, 0])
+					cylinder(
+						h = 25 + 4 + 4,
+						r = r2,
+						$fa = fa(r2),
+						center = true);
+			translate([-25 / 2 - 6 - 2.5, -1.75, 0])
+				rotate([0, 90, 0])
+					cylinder(
+						h = 25 + 4 + 4,
+						r = r2,
+						$fa = fa(r2),
+						center = true);
+
+			door_hinge_pin();
+
+			translate([-3 / 2 - 25 - 6 - 1.75 + 0.5, 0, 2.75])
+				cube([2, 6, 12], center = true);
+
+		}
+	}
+
+}
+
+module Door_P11_cover_slide(){
+	color("Cyan"){
+		//render(){
+			translate([0,0,-10]){
+				translate([0,0,10]){
+					cslide();
+				}
+				mirror([0, 0, 1]) translate([0,0,10]){
+					cslide();
+				}
+			}
+		//}
+	}
+}
+
 module Body_P14_slide_body(){
 
 	color("White") render() {
@@ -1988,9 +1275,9 @@ module Body_P14_slide_body(){
 
 module cover_slide(){
 
-	color("Silver") slide_bars();
-	Door_P9_cover_slide_hinge();
-	Door_P10_cover_slide_brace();
+	//color("Silver") slide_bars();
+
+	Door_P11_cover_slide();
 
 }
 
@@ -1999,7 +1286,7 @@ module cover_slides(shift, joint_position){
 		translate(joint_position){
 			r = 7.5 / 2;
 			translate([0,0, 10]) cover_slide(shift, joint_position);
-			translate([0,0,-10]) cover_slide(shift, joint_position);
+			//translate([0,0,-10]) cover_slide(shift, joint_position);
 		}
 	}
 }
@@ -2026,7 +1313,7 @@ module Door_P1(){
 			intersection(){
 				cover(cover_angle, joint_position, shift, true);
 				translate([220,90,0])
-					cube([140, 140, 140], center = true);
+					cube([140, 140 - 0.1, 140], center = true);
 			}
 			difference(){
 				intersection(){
@@ -2066,10 +1353,10 @@ module Door_P2(){
 							cube([140, 140, 140], center = true);
 					}
 					translate([220,90,0])
-						cube([140, 140, 140], center = true);
+						cube([140, 140 - 0.1, 140], center = true);
 				}
 			}
-			shaft_cutout();
+			//shaft_cutout();
 		}
 	}
 }
@@ -2093,7 +1380,7 @@ module Door_P3(){
 						cube([140, 140, 140], center = true);
 				}
 				translate([220,90,0])
-					cube([140, 140, 140], center = true);
+					cube([140, 140 - 0.1, 140], center = true);
 			}
 		}
 	}
@@ -2212,19 +1499,36 @@ module hinge_pull_relief(){
 }
 
 module end_piece(){
-	union(){
-		translate([0, -8, 0])
-			rotate([0,-40,0])
-				translate([0, 0, 40 / 2])
-					cube([15, 5, 40], center = true);
-		translate([0, -8, 0])
-			rotate([90,-40,0])
-				translate([0, 40,0])
-					cylinder(
-						r = 15 / 2,
-						h = 5,
-						$fa = fa(15 / 2),
-						center = true);
+	difference(){
+		union(){
+			translate([0, -8, 0])
+				rotate([0,-40,0])
+					translate([0, 0, 40 / 2])
+						cube([15, 5, 40], center = true);
+			translate([0, -8, 0])
+				rotate([90,-40,0])
+					translate([0, 40,0])
+						cylinder(
+							r = 15 / 2,
+							h = 5,
+							$fa = fa(15 / 2),
+							center = true);
+		}
+		union(){
+			translate([0,-5,5])
+				rotate([0,-44,0])
+					rotate([0,0,45])
+						translate([5, -2, 15])
+							cube([10,20,80], center = true);
+			translate([0, -8, 0])
+				rotate([90,-40,0])
+					translate([0, 44,0])
+						cylinder(
+							r = 2 / 2,
+							h = 10,
+							$fa = fa(2 / 2),
+							center = true);
+		}
 	}
 }
 
@@ -2242,8 +1546,8 @@ module flybar_hinge_side(){
 				rotate([-90,0,0])
 					trapezoid(15, 10, 25, 5);
 				end_piece();
-				}
-				union(){
+			}
+			union(){
 				translate([0, -8, 0])
 					rotate([90,-40,0])
 						translate([0, 40,0])
@@ -2262,7 +1566,7 @@ module flybar_hinge_side(){
 
 module Prop_P1_hinge(){
 	color("Blue"){
-		render(){
+		//render(){
 			translate(prop_joint_position){
 				difference(){
 					union(){
@@ -2294,6 +1598,164 @@ module Prop_P1_hinge(){
 					}
 				}
 			}
+		//}
+	}
+}
+
+module Body_P14_motor_lift_servo_mount(){
+	color("Cyan")
+	render(){
+		difference(){
+			union(){
+				translate([140, -30, 110]){
+					rotate([0, -35, 0]){
+						difference(){
+							union(){
+								translate([-9, -3.6, -25]){
+									cube([14, 5, 50], center = true);
+								}
+								translate([-1, -3.6, 3]){
+									cube([40, 5, 8], center = true);
+								}
+								translate([-1, -3.6, -47]){
+									cube([40, 5, 8], center = true);
+								}
+								translate([4.6,-7,3.3])
+									rotate([90,0,0])
+									cylinder(
+										r = 3,
+										h = 4,
+										$fa = fa(3),
+										center = true);
+								translate([4.6 + 9.2,-7,3.3])
+									rotate([90,0,0])
+									cylinder(
+										r = 3,
+										h = 4,
+										$fa = fa(3),
+										center = true);
+								translate([4.6, -7,3.3 - 50])
+									rotate([90,0,0])
+									cylinder(
+										r = 3,
+										h = 4,
+										$fa = fa(3),
+										center = true);
+								translate([4.6 + 9.2, -7,3.3 - 50])
+									rotate([90,0,0])
+									cylinder(
+										r = 3,
+										h = 4,
+										$fa = fa(3),
+										center = true);
+							}
+							union(){
+								translate([4.6,0,3.3])
+									rotate([90,0,0])
+									cylinder(
+										r = 2.2 / 2,
+										h = 20,
+										$fa = fa(2.2 / 2),
+										center = true);
+								translate([4.6 + 9.2,0,3.3])
+									rotate([90,0,0])
+									cylinder(
+										r = 2.2 / 2,
+										h = 20,
+										$fa = fa(2.2 / 2),
+										center = true);
+								translate([4.6,0,3.3 - 50])
+									rotate([90,0,0])
+									cylinder(
+										r = 2.2 / 2,
+										h = 20,
+										$fa = fa(2.2 / 2),
+										center = true);
+								translate([4.6 + 9.2,0,3.3 - 50])
+									rotate([90,0,0])
+									cylinder(
+										r = 2.2 / 2,
+										h = 20,
+										$fa = fa(2.2 / 2),
+										center = true);
+							}
+						}
+					}
+				}
+				intersection(){
+					translate([140, -30, 110]){
+						rotate([0, -35, 0]){
+							translate([-16, -3.6 - 10, -22]){
+								cube([20, 20, 58], center = true);
+							}
+						}
+					}
+					sphere(r = internal_radius + 5, $fa = fa(internal_radius + 5));
+				}
+			}
+			union(){
+				sphere(r = internal_radius, $fa = fa(internal_radius));
+			}
+		}
+	}
+}
+
+module Body_P15_motor_lift_drum(){
+	top_thick = 2;
+	center_thick = 5;
+	bottom_thick = 2;
+	render(){
+		color("Salmon"){
+			difference(){
+				union(){
+					translate([0, 0, top_thick / 2])
+						cylinder(
+							h = top_thick,
+							r = 22 / 2,
+							$fa = fa(22 / 2),
+							center = true);
+					translate([0, 0, top_thick + center_thick / 2])
+						cylinder(
+							h = center_thick,
+							r = 10 / 2,
+							$fa = fa(10 / 2),
+							center = true);
+					translate([0, 0, top_thick + center_thick + bottom_thick / 2])
+						cylinder(
+							h = bottom_thick,
+							r = 22 / 2,
+							$fa = fa(22 / 2),
+							center = true);
+				}
+				union(){
+					for(i = [0:90:270])
+						rotate([0, 0, i])
+							translate([0, 7.5, 0])
+								cylinder(
+									h = 5,
+									r = 1.6 / 2,
+									$fa = fa(1.6 / 2),
+									center = true);				
+					translate([0, 0, top_thick + center_thick / 2])
+						rotate([90,0, 0])
+							cylinder(
+								h = 30,
+								r = 2 / 2,
+								$fa = fa(2 / 2),
+								center = true);
+					translate([0, 7.5, top_thick + center_thick + bottom_thick / 2])
+						cylinder(
+							h = 5,
+							r = 2 / 2,
+							$fa = fa(2 / 2),
+							center = true);
+					cylinder(
+						h = 30,
+						r = 3 / 2,
+						$fa = fa(3/2),
+						center = true);
+				}
+			}
 		}
 	}
 }
@@ -2302,15 +1764,14 @@ module propulsion_system(){
 
 	//flight_motor_hinge_pin();
 
+	Body_P14_motor_lift_servo_mount();
+
 	translate(prop_joint_position){
-		translate([-16, -40, -45])
+		translate([-16, -38, -45])
 			rotate([-90,-125,0]){
-				translate([-15,0,28])
-					color("Salmon") cylinder(
-						r = 35.5 / 2,
-							h = 10,
-							$fa = fa(35.5 / 2),
-							center = true);
+				TGY_4805_2PA_translate()
+					translate([0, 0, 5 / 2])
+						Body_P15_motor_lift_drum();
 				color("Crimson") TGY_4805_2PA();
 			}
 	}
@@ -2321,6 +1782,7 @@ module propulsion_system(){
 	rotate_about(prop_joint_position, [0, arm_angle, 0]){
 
 		Prop_P1_hinge();
+		Prop_P2_motor_mount();
 
 		color("Black"){
 			translate([175.5,0,32.5 - 8]){
@@ -2360,8 +1822,13 @@ module Door_P7_middle_door_brace(){
 		intersection(){
 			difference(){
 				union(){
-					translate([170, -60, 0])
-						cube([30, 15, 20], center = true);
+					intersection(){
+						translate([170, -60, 0])
+							cube([30, 15, 20], center = true);
+						sphere(
+							r = internal_radius + 22,
+							$fa = fa(internal_radius + 22));
+					}
 					translate([205, -56.25, 0])
 						cube([85, 7.5, 15], center = true);
 				}
@@ -2535,6 +2002,12 @@ module Prop_P2_motor_mount(){
 										r2 = 3 / 2,
 										$fa = fa(3 / 2),
 										center = true);
+						rotate([0,90,0])
+							cylinder(
+								h = 10,
+								r = 15 / 2,
+								$fa = fa(15 / 2),
+								center = true);
 						translate([11.75, 0, 40 - 12.5])
 							scale([1.85, 1, 1])
 							rotate([90, 0, 0])
@@ -2563,95 +2036,45 @@ module Prop_P2_motor_mount(){
 	}
 }
 
-translate([150,130,25])
-	rotate([180,0,180])
-		color("Magenta") render() HS_5065MG();
-
-module body_assembly(){
-
-	for(i = [0:90:270]){
-		for(j = [0:180:180]){
-			rotate([0,j,i]){
-				color("Red")					Body_P1();
-				color("Green")				Body_P2();
-				color("Yellow")				Body_P3();
-				color("Turquoise")		Body_P4();
-				color("OrangeRed")		Body_P5();
-
-				color("Blue")					Body_P6();
-				color("Purple")				Body_P7();
-				color("DeepPink")			Body_P8();
-				color("SpringGreen")	Body_P9();
-				color("DarkKhaki") 		Body_P10();
-				color("LawnGreen") 		Body_P11();
-
-				color("Fuchsia") 			Body_P12();
-			}
+module door_servo(){
+	translate([153,130,32.5])
+		rotate([180,0,180]){
+			render()
+				HS_5065MG();
+			render()
+				HS_5065MG_shaft_translate() HS_5065MG_arm();
 		}
-	}
 }
 
-Prop_P2_motor_mount();
+module head(){
+	difference(){
+		translate([0, 0, 300]){
+			sphere(
+				r = 300 / 2,
+				$fa = fa(300 / 2));
+			translate([110,0,150 - 37.5 * 2]){
+				sphere(
+					r = 37.5,
+					$fa = fa(37.5));
+			}
+		}
+		translate([0,0, - 200 / 2 + 300]){
+			cube([400, 400, 200], center = true);
+		}
+	}
 
-Door_P11_door_edge_brace(-45);
-Door_P12_door_edge_bumper(-45);
+	translate([0, 0, 300 - 25 / 2])
+		cylinder(
+			h = 25,
+			r = 300 / 2,
+			$fa = fa(300 / 2),
+			center = true);
+	translate([0, 0, 300 - 25 - 25 / 2])
+		cylinder(
+			h = 25,
+			r1 = 250 / 2,
+			r2 = 300 / 2,
+			$fa = fa(300 / 2),
+			center = true);
+}
 
-Door_P11_door_edge_brace(-15);
-Door_P12_door_edge_bumper(-15);
-
-Door_P11_door_edge_brace(15);
-Door_P12_door_edge_bumper(15);
-
-Door_P11_door_edge_brace(45);
-Door_P12_door_edge_bumper(45);
-
-//color("Cyan") Door_P6_servo_lever();
-
-color("FireBrick") Door_P8_middle_door_bumper();
-mirror([0, 1, 0])
-	color("Lime") Door_P8_middle_door_bumper();
-
-color("DeepSkyBlue") Door_P7_middle_door_brace();
-mirror([0, 1, 0])
-	color("DeepSkyBlue") Door_P7_middle_door_brace();
-
-rotate([0,0,-90])
-color("Red")					Body_P1();
-color("Green")				Body_P2();
-color("Yellow")				Body_P3();
-color("Turquoise")		Body_P4();
-color("OrangeRed")		Body_P5();
-
-color("Blue")					Body_P6();
-color("Purple")				Body_P7();
-color("DeepPink")			Body_P8();
-color("SpringGreen")	Body_P9();
-color("DarkKhaki")		Body_P10();
-color("LawnGreen")		Body_P11();
-
-rotate([0,0,-90])
-color("Fuchsia")			Body_P12();
-
-color("Magenta")			Body_P13();
-
-cover_assembly();
-//color([0.75,0.75,0.75,0.25]) % body_assembly();
-
-//fan_assembly();
-//translate([175,0,145])
-//cube([10,10,10], center = true);
-
-/*
-Fan Fold Sequence
-1. Align blades to arm
-2. open right door 90 deg
-3. rotate blades 110 degrees one of blades will hit door
-4. rotate another 90 degrees to fold blade
-5. rotate back 240 degrees to other blade hits cover
-6. rotate 90 degrees more to fold prop
-7. rotate back 40 degress
-8. fold in arms
-9. fold right door
-*/
-
-propulsion_system();
