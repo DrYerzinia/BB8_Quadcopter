@@ -4,5 +4,5 @@ include <../render_settings.scad>
 
 use <../BB8.scad>
 
-rotate([90,45,0])
-	Body_P5();
+rotate([0, 0, -45])
+Body_P21();

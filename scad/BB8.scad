@@ -54,7 +54,7 @@ as = 11;
 animating = false;
 
 prop_deployed = false;
-cover_open = true;
+cover_open = false;
 
 arm_angle =
 	animating
@@ -533,6 +533,23 @@ module Body_P2(){ // make me
 	}
 }
 
+module Body_P18(){
+	render(){
+		difference(){
+			intersection(){
+				inner_internal_sphere(0);
+				slice_7(95);
+			}
+			translate([0, 0, 150])
+				cylinder(
+					h = 50,
+					r = 15,
+					$fn = 8,
+					center = true);
+		}
+	}
+}
+
 module angle_slice(dir){
 translate([175, 175, 35]){
 	difference(){
@@ -608,6 +625,79 @@ module Body_P13(){
 					$fn = 8,
 					center = true);
 		}
+	}
+}
+
+module Body_P19(){
+	render(){
+		difference(){
+			intersection(){
+				outer_internal_sphere();
+				translate([0, 0, 160])
+					cylinder(
+						h = 30,
+						r = 60,
+						$fn = 8,
+						center = true);
+			}
+			translate([0,0,150])
+				cylinder(
+					h = 50,
+					r = 15,
+					$fn = 8,
+					center = true);
+		}
+	}
+}
+
+module Body_P20(){
+	render(){
+		test =  body_radius-6;
+			difference(){
+				intersection(){
+					difference(){
+						rotate([90,0,90]){
+							linear_extrude(
+								height = 10,
+								center = true,//false,
+								convexity = 2,
+								twist = 0
+							){
+								polygon(
+									points = [
+										[0,0],
+										[test*cos(38.75),test*sin(38.75)],
+										[test*cos(51.25),test*sin(51.25)]
+									]
+								);
+							}
+						}
+						sphere(r = internal_radius, $fn=radial_resolution);
+					}
+					sphere(
+						r = body_radius - body_shell_thickness,
+						$fa = fa(body_radius - body_shell_thickness));
+				}
+				translate([0, 176, 139.5])
+					union(){
+					cube(
+						[10, 40, 20],
+						center = true);
+						translate([0, -31.8, -26])
+							rotate([50, 0, 0])
+								translate([0,22.5,4])
+									cube(
+										[10, 25, 20],
+										center = true);
+						translate([0, -31.8, -26])
+							rotate([90, 0, 0])
+								translate([0,2,-5.8])
+									cube(
+										[10, 30, 20],
+										center = true);
+					}
+
+			}
 	}
 }
 
@@ -1091,6 +1181,1156 @@ module cover(angle, joint_position, shift, inner){
 	}
 }
 
+module inner_door_trap(){
+	w = 30;
+	translate([200, 0, 0])
+		rotate([0, 90, 0])
+			rotate([0, 0, 225])
+				translate([- w / 2, -120, 0]){
+					width_base = w;
+					width_top = 20;
+					height = 50;
+					trp_rad = 4;
+					linear_extrude(height = 50)
+					union(){
+						translate([width_base-(width_base-width_top)/2 - trp_rad, height - trp_rad, 0])
+							circle(r = trp_rad, $fa = fa(trp_rad));
+						translate([(width_base-width_top)/2 + trp_rad, height - trp_rad, 0])
+							circle(r = trp_rad, $fa = fa(trp_rad));
+						polygon(
+							points =
+								[
+									[0,0],
+									[width_base,0],
+									[width_base-(width_base-width_top)/2, height - trp_rad],
+									[width_base-(width_base-width_top)/2 - trp_rad, height],
+									[(width_base-width_top)/2 + trp_rad,height],
+									[(width_base-width_top)/2, height - trp_rad]
+								],
+								paths=[[0,1,2,3, 4, 5]]);
+					}
+				}
+}
+
+module inner_door_ring(){
+	intersection(){
+		difference(){
+			rounded_hole_cover();
+			union(){
+				rotate([0, 90, 0])
+					translate([0, 0, 250])
+						cylinder(
+							h = 100,
+							r = 112,
+							$fa = fa(112),
+							center = true);
+				inner_door_trap();
+			}
+		}
+		translate([230, 0, 0])
+				rotate([0, -90, 0])
+			linear_extrude(height = 50)
+				polygon(points=[[0, 0], [160, 0], [160, 160]]);
+	}
+}
+
+module Door_P20(){
+	render(){
+		inner_door_ring();
+	}
+}
+
+module Door_P21(){
+	render(){
+		mirror([0, 1, 0])
+			inner_door_ring();
+	}
+}
+
+module top_ring_features(){
+
+	translate([250, 0, 0])
+		rotate([0,90,0])
+			cylinder(
+				h = 90,
+				r = 113,
+				$fa = fa(113),
+				center = true);
+
+	translate([250, 0, 0])
+		rotate([0,90,0]){
+			difference(){
+				cylinder(
+					h = 90,
+					r = 138,
+					$fa = fa(138),
+					center = true);
+				cylinder(
+					h = 100,
+					r = 137,
+					$fa = fa(137),
+					center = true);
+				linear_extrude(height = 100, center = true)
+					pie_slice(140, 70, 110);
+				linear_extrude(height = 100, center = true)
+					pie_slice(140, -110, 20);
+			}
+		}
+	rotate([176 + 90,0,0])
+		rotate([0,31.5,0]){
+			translate([250, 0, 0])
+				rotate([0,90,0])
+					cube([25, 3, 100], center = true);
+			translate([250, 0, 25 / 2])
+				rotate([0,90,0])
+					cylinder(
+						h = 100,
+						r = 3 / 2,
+						$fa = fa(3 / 2),
+						center = true);
+			translate([250, 0, - 25 / 2])
+				rotate([0,90,0])
+					cylinder(
+						h = 100,
+						r = 3 / 2,
+						$fa = fa(3 / 2),
+						center = true);
+		}
+	rotate([170 + 90,0,0])
+		rotate([0,31.5,0]){
+			translate([250, 0, 0])
+				rotate([0,90,0])
+					cube([25, 3, 100], center = true);
+			translate([250, 0, 25 / 2])
+				rotate([0,90,0])
+					cylinder(
+						h = 100,
+						r = 3 / 2,
+						$fa = fa(3 / 2),
+						center = true);
+			translate([250, 0, - 25 / 2])
+				rotate([0,90,0])
+					cylinder(
+						h = 100,
+						r = 3 / 2,
+						$fa = fa(3 / 2),
+						center = true);
+		}
+	rotate([164 + 90,0,0])
+		rotate([0,31.5,0]){
+			translate([250, 0, 0])
+				rotate([0,90,0])
+					cube([25, 3, 100], center = true);
+			translate([250, 0, 25 / 2])
+				rotate([0,90,0])
+					cylinder(
+						h = 100,
+						r = 3 / 2,
+						$fa = fa(3 / 2),
+						center = true);
+			translate([250, 0, - 25 / 2])
+				rotate([0,90,0])
+					cylinder(
+						h = 100,
+						r = 3 / 2,
+						$fa = fa(3 / 2),
+						center = true);
+		}
+
+	rotate([160,0,0])
+		translate([250, 132, 0])
+			rotate([0,90,0])
+				cube([1, 45, 100], center = true);
+	rotate([20,0,0])
+		translate([250, 132, 0])
+			rotate([0,90,0])
+				cube([1, 45, 100], center = true);
+	rotate([-90,0,0])
+		translate([250, 132, 0])
+			rotate([0,90,0])
+				cube([1, 45, 100], center = true);
+
+	rotate([-70,0,0])
+		translate([250, 144.5, 0])
+			rotate([0,90,0])
+				cube([1, 15, 100], center = true);
+	rotate([-20,0,0])
+		translate([250, 144.5, 0])
+			rotate([0,90,0])
+				cube([1, 15, 100], center = true);
+
+}
+
+module bottom_door_shape_3(off){
+				offset(r = off)
+				intersection(){
+					difference(){
+						circle(
+							r = 138,
+							$fa = fa(138),
+							center = true);
+						circle(
+							r = 117,
+							$fa = fa(117),
+							center = true);
+					}
+					pie_slice(140, 160, 180);
+			}
+}
+
+module bottom_ring_features(){
+
+	translate([250, 0, 0])
+		rotate([0,90,0])
+			cylinder(
+				h = 90,
+				r = 113,
+				$fa = fa(113),
+				center = true);
+
+	translate([250, 0, 0])
+		rotate([0,90,0]){
+			difference(){
+				cylinder(
+					h = 90,
+					r = 138,
+					$fa = fa(138),
+					center = true);
+				cylinder(
+					h = 100,
+					r = 137,
+					$fa = fa(137),
+					center = true);
+				linear_extrude(height = 100, center = true)
+					pie_slice(140, -20, 200);
+			}
+		}
+
+	rotate([110,0,0])
+		translate([250, 132, 0])
+			rotate([0,90,0])
+				cube([1, 45, 100], center = true);
+	rotate([-110,0,0])
+		translate([250, 132, 0])
+			rotate([0,90,0])
+				cube([1, 45, 100], center = true);								//
+	rotate([-8,0,0])
+		translate([250, 132, 0])
+			rotate([0,90,0])
+				cube([1, 45, 100], center = true);
+	rotate([-52.5,0,0])
+		translate([250, 132, 0])
+			rotate([0,90,0])
+				cube([1, 45, 100], center = true);
+
+	translate([250, 0, 0])
+		rotate([0,90,0]){
+			linear_extrude(height = 100, center = true)
+			difference(){
+				bottom_door_shape_3(0);
+				bottom_door_shape_3(-1);
+			}
+		}
+
+		rotate([75, 0, 0])
+		rotate([0,31.5,0])
+		translate([250, 0, 0])
+			rotate([0,90,0])
+				difference(){
+				cylinder(
+					h = 100,
+					r = 10,
+					$fa = fa(10),
+					center = true);
+				cylinder(
+					h = 110,
+					r = 9,
+					$fa = fa(9),
+					center = true);
+				}
+
+}
+
+module ring_section_1(rot){
+		difference(){
+			rotate([rot, 0, 0])
+				mirror([0, 1, 0])
+				inner_door_ring();
+			difference(){
+					top_ring_features();
+				sphere(
+					r = body_radius - 1,
+					$fa = fa(body_circle_radius));
+			}
+		}
+}
+
+module ring_section_2(rot){
+		difference(){
+			rotate([rot, 0, 0])
+				inner_door_ring();
+			difference(){
+					top_ring_features();
+				sphere(
+					r = body_radius - 1,
+					$fa = fa(body_circle_radius));
+			}
+		}
+}
+
+module ring_section_3(rot){
+		difference(){
+			rotate([rot, 0, 0])
+				mirror([0, 1, 0])
+					inner_door_ring();
+			difference(){
+					bottom_ring_features();
+				sphere(
+					r = body_radius - 1,
+					$fa = fa(body_circle_radius));
+			}
+		}
+}
+
+module ring_section_4(rot){
+		difference(){
+			rotate([rot, 0, 0])
+				inner_door_ring();
+			difference(){
+					bottom_ring_features();
+				sphere(
+					r = body_radius - 1,
+					$fa = fa(body_circle_radius));
+			}
+		}
+}
+
+module Door_P32(){
+
+	render() ring_section_1(0);
+}
+
+module Door_P33(){
+	render() ring_section_1(90);
+}
+
+module Door_P34(){
+	render() ring_section_1(180);
+}
+
+module Door_P35(){
+	render() ring_section_1(270);
+}
+
+module Door_P36(){
+	render() ring_section_2(0);
+}
+
+module Door_P37(){
+	render() ring_section_2(90);
+}
+
+module Door_P38(){
+	render() ring_section_2(180);
+}
+
+module Door_P39(){
+	render() ring_section_2(270);
+}
+
+module Door_P41(){
+	render() ring_section_3(0);
+}
+
+module Door_P42(){
+	render() ring_section_3(90);
+}
+
+module Door_P43(){
+	render() ring_section_3(180);
+}
+
+module Door_P44(){
+	render() ring_section_3(270);
+}
+
+module Door_P45(){
+	render() ring_section_4(0);
+}
+
+module bottom_door_circle(){
+	rotate([-108, 0, 0])
+		rotate([0, 27, 0])
+		translate([250, 0, 0])
+			rotate([0,90,0])
+				difference()
+					cylinder(
+						h = 90,
+						r = 13,
+						$fa = fa(13),
+						center = true);
+}
+
+module Door_P46(){
+	render(){
+		difference(){
+			ring_section_4(90);
+			bottom_door_circle();
+		}
+	}
+}
+
+module Door_P47(){
+	render() ring_section_4(180);
+}
+
+module Door_P48(){
+	render() ring_section_4(270);
+}
+
+module Door_P49(){
+	render(){
+		difference(){
+			intersection(){
+				rounded_hole_cover();
+				bottom_door_circle();
+			}
+			difference(){
+				rotate([-108, 0, 0])
+				rotate([0, 27, 0])
+					translate([250, 0, 0])
+						rotate([0,90,0])
+							difference(){
+								cylinder(
+									h = 90,
+									r = 14,
+									$fa = fa(14),
+									center = true);
+								cylinder(
+									h = 90,
+									r = 12,
+									$fa = fa(12),
+									center = true);
+							}
+				sphere(
+					r = body_radius - 2.5,
+					$fa = fa(body_circle_radius));
+			}
+		}
+	}
+}
+
+module bottom_door_shape_1(off){
+	translate([250, 0, 0])
+		rotate([0,90,0]){
+			linear_extrude(height = 100, center = true)
+			offset(r=off)
+				difference(){
+					difference(){
+						circle(
+							r = 105,
+							$fa = fa(105),
+							center = true);
+						circle(
+							r = 75,
+							$fa = fa(75),
+							center = true);
+					}
+					pie_slice(140, 36, 328);
+				}
+			}
+}
+
+module Door_P50(){
+	render(){
+		difference(){
+			intersection(){
+				rounded_hole_cover();
+				bottom_door_shape_1(0);
+			}
+			union(){
+				difference(){
+					union(){
+						difference(){
+							bottom_door_shape_1(0);
+							bottom_door_shape_1(-1);
+						}
+						translate([250, 0, 0])
+							rotate([0,90,0]){
+								linear_extrude(height = 100, center = true)
+									intersection(){
+										difference(){
+											circle(
+												r = 90.5,
+												$fa = fa(90.5),
+												center = true);
+											circle(
+												r = 89.5,
+												$fa = fa(89.5),
+												center = true);
+										}
+										pie_slice(140, 30, 36);
+									}
+								}
+					}
+					sphere(
+						r = 249,
+						$fa = fa(249));
+				}
+					translate([250, 0, 0])
+						rotate([0,90,0]){
+							linear_extrude(height = 100, center = true)
+								intersection(){
+									difference(){
+										circle(
+											r = 85,
+											$fa = fa(85),
+											center = true);
+										circle(
+											r = 74,
+											$fa = fa(74),
+											center = true);
+									}
+									union(){
+										pie_slice(140, -23, -20);
+										pie_slice(140,-17, -14);
+										pie_slice(140,-11, -8);
+										pie_slice(140,-5, -2);
+									}
+								}
+							}
+			}
+		}
+	}
+}
+
+module bottom_door_shape_2(off){
+	translate([250, 0, 0])
+		rotate([0,90,0]){
+			linear_extrude(height = 100, center = true)
+			offset(r=off)
+			union(){
+				intersection(){
+					difference(){
+						circle(
+							r = 100,
+							$fa = fa(100),
+							center = true);
+						circle(
+							r = 38,
+							$fa = fa(38),
+							center = true);
+					}
+					pie_slice(140, 149, 215);
+				}
+				intersection(){
+					difference(){
+						circle(
+							r = 60,
+							$fa = fa(60),
+							center = true);
+						circle(
+							r = 38,
+							$fa = fa(38),
+							center = true);
+					}
+					pie_slice(140, 35, 150);
+				}
+			}
+			}
+}
+
+module bottom_door_cutouts(){
+	difference(){
+		translate([250, 0, 0])
+			rotate([0,90,0])
+				linear_extrude(height = 100, center = true)
+					difference(){
+						circle(
+							r = 60,
+							$fa = fa(60),
+							center = true);
+						circle(
+							r = 38,
+							$fa = fa(38),
+							center = true);
+					}
+		sphere(
+			r = body_radius - 1,
+			$fa = fa(body_circle_radius));
+	}
+
+	bottom_door_circle();
+	bottom_door_shape_1(0);
+	bottom_door_shape_2(0);
+}
+
+module bottom_door_cutout_segment(rot){
+		difference(){
+			intersection(){
+				intersection(){
+					rounded_hole_cover();
+					translate([260, 0, 0])
+							rotate([0, -90, 0])
+						rotate([0, 0, rot])
+						linear_extrude(height = 100)
+							polygon(points=[[0, 0], [160, 0], [160, 160], [0, 160]]);
+				}
+				rotate([0, 90, 0])
+					translate([0, 0, 250])
+						cylinder(
+							h = 100,
+							r = 112,
+							$fa = fa(112),
+							center = true);
+			}
+			union(){
+				rotate([-rot, 0, 0])
+					inner_door_trap();
+				bottom_door_cutouts();
+			}
+		}
+}
+
+module slice_51(off){
+	offset(r = off)
+					intersection(){
+						difference(){
+							circle(
+								r = 75,
+								$fa = fa(75),
+								center = true);
+							circle(
+								r = 55,
+								$fa = fa(55),
+								center = true);
+						}
+						pie_slice(140, 195, 207.5);
+					}
+}
+
+module Door_P51(){
+	render(){
+		difference(){
+			intersection(){
+				rounded_hole_cover();
+				bottom_door_shape_2(0);
+			}
+			difference(){
+				union(){
+					rotate([59.5, 0, 0])
+						translate([250, 50, 0])
+							cube([50, 25, 1], center = true);
+					difference(){
+						bottom_door_shape_2(0);
+						bottom_door_shape_2(-1);
+					}
+				translate([250, 0, 0])
+					rotate([0,90,0])
+						linear_extrude(height = 100, center = true)
+							difference(){
+								slice_51(0);
+								slice_51(-1);
+							}
+	translate([250, 35, 67.5])
+		rotate([-25, 0, 0]){
+			cube([50, 17.5, 1], center = true);
+			translate([0, -8.5, 1])
+				cube([50, 1, 3], center = true);
+			translate([0, -8.5, 21.5])
+				cube([50, 1, 3], center = true);
+			translate([0, -8.5 - 1.5, 11.25])
+				cube([50, 1, 17.5], center = true);
+			translate([0, -8.5 + 1.5, 11.25])
+				cube([50, 1, 17.5], center = true);
+			translate([0, -8.5, 20])
+				cube([50, 4, 1], center = true);
+			translate([0, -8.5, 3])
+				cube([50, 4, 1], center = true);
+			translate([0, -8.5, 3 + 17 / 2])
+				cube([50, 4, 1], center = true);
+		}
+				}
+				sphere(
+					r = 249,
+					$fa = fa(249));
+			}
+		}
+	}
+}
+
+module Door_P52(){
+	render() bottom_door_cutout_segment(0);
+}
+
+module Door_P53(){
+	render() bottom_door_cutout_segment(90);
+}
+
+module Door_P54(){
+	render() bottom_door_cutout_segment(180);
+}
+
+module Door_P55(){
+	render() bottom_door_cutout_segment(270);
+}
+
+module locking_trap(){
+
+rotate([0, 0, -45])
+					translate([0, 126, 220]){
+						width_base = 25;
+						width_top = 15;
+						height = 35;
+						trp_rad = 4;
+						rotate([-90, 0, 90])
+							linear_extrude(height = 5, center = true)
+								union(){
+									translate([width_base-(width_base-width_top)/2 - trp_rad, height - trp_rad, 0])
+										circle(r = trp_rad, $fa = fa(trp_rad));
+									translate([(width_base-width_top)/2 + trp_rad, height - trp_rad, 0])
+										circle(r = trp_rad, $fa = fa(trp_rad));
+									polygon(
+										points =
+											[
+												[0,0],
+												[width_base,0],
+												[width_base-(width_base-width_top)/2, height - trp_rad],
+												[width_base-(width_base-width_top)/2 - trp_rad, height],
+												[(width_base-width_top)/2 + trp_rad,height],
+												[(width_base-width_top)/2, height - trp_rad]
+											],
+										paths=[[0,1,2,3, 4, 5]]);
+								}
+					}
+
+}
+
+module Door_P40(){
+	render(){
+		difference(){
+			intersection(){
+				locking_trap();
+				sphere(r = 245, $fa = fa(245));
+			}
+			rotate([0, 0, -45])
+				translate([0, 138, 192])
+					rotate([90, 0, 90])
+						cylinder(h = 30, r = 2.5,  $fa = fa(2.5), center = true);
+		}
+	}
+}
+
+module inner_sphere_space(){
+	difference(){
+		union(){
+			intersection(){
+				rotate([0, 0, 90])
+					cylinder(
+						h = 550,
+						r = 150,
+						$fa = fa(150),
+						center = true);
+				sphere(
+					r = 249,
+					$fa = fa(249));
+			}
+			sphere(
+				r = 240,
+				$fa = fa(240));
+		}
+		rotate([0, -90, 0])
+			rounded_hole_cover();
+	}
+}
+
+module Body_P21(){
+	render(){
+		difference(){
+			intersection(){
+
+				inner_sphere_space();
+
+				difference(){
+					rotate([0, 0, -45])
+						translate([0, 138, 192])
+							rotate([0, 90, 0]){
+								linear_extrude(height = 10, center = true){
+									translate([0, 2.5, 0])
+										square(size = [15, 20], center = true);
+									translate([7.5, -2.5, 0])
+										circle(r = 5, $fa = fa(5), center = true);
+									translate([5, 12.5, 0])
+										square(size = [15, 30], center = true);
+								}
+							}
+					rotate([0, 0, -45])
+						translate([0, 138, 192])
+							rotate([90, 0, 90])
+								cylinder(h = 30, r = 2.5,  $fa = fa(2.5), center = true);
+				}
+			}
+			locking_trap();
+		}
+	}
+}
+
+module Door_P22(){
+	render(){
+		difference(){
+			intersection(){
+				rounded_hole_cover();
+				inner_door_trap();
+			}
+			difference(){
+				union(){
+					translate([250, 0, 0])
+						rotate([0,90,0])
+							difference(){
+								cylinder(
+									h = 90,
+									r = 113,
+									$fa = fa(113),
+									center = true);
+								cylinder(
+									h = 100,
+									r = 112,
+									$fa = fa(112),
+									center = true);
+								}
+					rotate([-45, 0, 0])
+						rotate([0, -18.5, 0])
+							translate([250, 0, 0])
+								rotate([0,90,0])
+									union(){
+										difference(){
+											cylinder(
+												h = 90,
+												r = 6,
+												$fa = fa(6),
+												center = true);
+											cylinder(
+												h = 100,
+												r = 5,
+												$fa = fa(5),
+												center = true);
+										}
+										difference(){
+											cylinder(
+												h = 90,
+												r = 3.5,
+												$fa = fa(3.5),
+												center = true);
+											cylinder(
+												h = 100,
+												r = 2.5,
+												$fa = fa(2.5),
+												center = true);
+										}
+									}
+				}
+				sphere(
+					r = body_radius - 1,
+					$fa = fa(body_circle_radius));
+			}
+		}
+	}
+}
+
+module door_arm_1(off){
+	translate([250,0,0])
+	rotate([0, 90, 0])
+	translate([-20,-56,0])
+	linear_extrude(height = 100, center = true)
+	offset(r = off)
+	polygon(points=[[-7,0],[7,0],[7	,22],[5.5,28],[5.5,112],[-5.5,112],[-5.5,28],[-7,22]]);
+}
+
+module door_arm_2(off){
+	translate([250,0,0])
+	rotate([0, 90, 0])
+	linear_extrude(height = 100, center = true)
+	offset(r = off)
+		square(size = [14, 112], center = true);
+}
+
+module door_arm_3(off){
+
+	translate([250,0,0])
+	rotate([0, 90, 0])
+		translate([20, 0, 0])
+	linear_extrude(height = 100, center = true)
+	offset(r = off)
+		square(size = [14, 112], center = true);
+
+}
+
+module shape_1(){
+	polygon(points=[[-28,0],[28,0],[28,12],[40,20],[80,80],[-80,80],[-40,20],[-28,12]]);
+}
+
+module door_shape_1(off){
+	translate([250,0,0])
+	rotate([0, 90, 0]){
+		rotate([0, 0, 90])
+		linear_extrude(height = 100, center = true)
+		offset(r = off){
+			intersection(){
+				translate([0,40,0])
+					shape_1();
+				circle(r = 102, $fa = fa(102));
+			}
+		}
+	}
+}
+
+module door_cutouts(){
+	door_arm_1(0);
+	door_arm_2(0);
+	door_arm_3(0);
+	rotate([180, 0, 0]) door_shape_1(0);
+	door_shape_1(0);
+}
+
+module door_cutout_segment(rot){
+		difference(){
+			intersection(){
+				intersection(){
+					rounded_hole_cover();
+					translate([260, 0, 0])
+							rotate([0, -90, 0])
+						rotate([0, 0, rot])
+						linear_extrude(height = 100)
+							polygon(points=[[0, 0], [160, 0], [160, 160], [0, 160]]);
+				}
+				rotate([0, 90, 0])
+					translate([0, 0, 250])
+						cylinder(
+							h = 100,
+							r = 112,
+							$fa = fa(112),
+							center = true);
+			}
+			union(){
+				difference(){
+					union(){
+						rotate([24,0,0])
+							rotate([0,23,0])
+								translate([250, 0, 0])
+									rotate([0,90,0])
+										cylinder(
+											h = 100,
+											r = 20 / 2,
+											$fa = fa(20 / 2),
+											center = true);
+						rotate([24 + 180,0,0])
+							rotate([0,23,0])
+								translate([250, 0, 0])
+									rotate([0,90,0])
+										cylinder(
+											h = 100,
+											r = 20 / 2,
+											$fa = fa(20 / 2),
+											center = true);
+						translate([250, 22, 35])
+							difference(){
+								cube([100, 15, 5], center = true);
+								cube([100+1, 15 - 2, 5 - 2], center = true);
+							}
+					}
+					sphere(r=249, $fa = fa(249));
+				}
+				rotate([-rot, 0, 0])
+				inner_door_trap();
+				door_cutouts();
+			}
+		}
+}
+
+module Door_P23(){
+	render() door_cutout_segment(0);
+}
+
+module Door_P24(){
+	render() door_cutout_segment(90);
+}
+
+module Door_P25(){
+	render() door_cutout_segment(180);
+}
+
+module Door_P26(){
+	render() door_cutout_segment(270);
+}
+
+module Door_P27(){
+
+	render(){
+		difference(){
+			intersection(){
+				rounded_hole_cover();
+				door_shape_1(0);
+			}
+			union(){
+				translate([250, 19, 94])
+					cube([100, 8, 4], center = true);
+				translate([250, 9, 94])
+					cube([100, 8, 4], center = true);
+				translate([250, -20, 94])
+					cube([100, 4, 5], center = true);
+				difference(){
+					union(){
+						translate([250, 0, 52])
+							cube([100, 60, 1], center = true);
+						translate([250, 0, 86])
+							cube([100, 50, 1], center = true);
+						translate([250, 0, 80])
+							cube([100, 50, 1], center = true);
+						translate([250, 25, 90-0.5])
+							cube([100, 1, 20], center = true);
+						translate([250, -25, 90-0.5])
+							cube([100, 1, 20], center = true);
+						difference(){
+							door_shape_1(0);
+							door_shape_1(-1);
+						}
+					}
+					sphere(r = 250 - 1, $fa = fa(250 - 1));
+				}
+			}
+		}
+	}
+}
+
+module Door_P28(){
+
+	render(){
+		difference(){
+			intersection(){
+				rounded_hole_cover();
+				door_shape_1(0);
+			}
+			union(){
+				translate([250, 19, 94])
+					cube([100, 8, 4], center = true);
+				translate([250, 0, 94])
+					cube([100, 8, 7], center = true);
+				translate([250, -20, 94])
+					cube([100, 8, 4], center = true);
+				difference(){
+					union(){
+						translate([250, 0, 52])
+							cube([100, 60, 1], center = true);
+						translate([250, 0, 86])
+							cube([100, 50, 1], center = true);
+						translate([250, 0, 80])
+							cube([100, 50, 1], center = true);
+						translate([250, 25, 90-0.5])
+							cube([100, 1, 20], center = true);
+						translate([250, -25, 90-0.5])
+							cube([100, 1, 20], center = true);
+						difference(){
+							door_shape_1(0);
+							door_shape_1(-1);
+						}
+					}
+					sphere(r = 250 - 1, $fa = fa(250 - 1));
+				}
+			}
+		}
+	}
+}
+
+module Door_P29(){
+
+	render(){
+		difference(){
+			intersection(){
+				rounded_hole_cover();
+				door_arm_1(0);
+			}
+			difference(){
+				union(){
+					translate([250, 52, 20])
+						cube([100, 1, 14], center = true);
+					translate([250, -52, 20])
+						cube([100, 1, 10], center = true);
+					translate([250, -52 - 2, 20 + 5])
+						cube([100, 5, 1], center = true);
+					translate([250, -52 - 2, 20 - 5])
+						cube([100, 5, 1], center = true);
+
+					difference(){
+						door_arm_1(0);
+						door_arm_1(-1);
+					}
+				}
+				sphere(r = 250 - 1, $fa = fa(250 - 1));
+			}
+		}
+	}
+}
+
+module Door_P30(){
+
+	render(){
+		difference(){
+			intersection(){
+				rounded_hole_cover();
+				door_arm_2(0);
+			}
+			difference(){
+				union(){
+					translate([250, 52, 0])
+						cube([100, 1, 20], center = true);
+					translate([250, -52, 0])
+						cube([100, 1, 10], center = true);
+					translate([250, -52 - 2, 5])
+						cube([100, 5, 1], center = true);
+					translate([250, -52 - 2, - 5])
+						cube([100, 5, 1], center = true);
+
+					difference(){
+						door_arm_2(0);
+						door_arm_2(-1);
+					}
+				}
+				sphere(r = 250 - 1, $fa = fa(250 - 1));
+			}
+		}
+	}
+}
+
+module Door_P31(){
+
+	render(){
+		difference(){
+			intersection(){
+				rounded_hole_cover();
+				door_arm_3(0);
+			}
+			difference(){
+				union(){
+					translate([250, 52, -20])
+						cube([100, 1, 20], center = true);
+					translate([250, -52, -20])
+						cube([100, 1, 10], center = true);
+					translate([250, -52 - 2, -20 + 5])
+						cube([100, 5, 1], center = true);
+					translate([250, -52 - 2, -20 - 5])
+						cube([100, 5, 1], center = true);
+
+					difference(){
+						door_arm_3(0);
+						door_arm_3(-1);
+					}
+				}
+				sphere(r = 250 - 1, $fa = fa(250 - 1));
+			}
+		}
+	}
+}
+
 module door_hinge_pin(){
 	r = 2.5 / 2;
 	cylinder(
@@ -1255,6 +2495,7 @@ module Door_P11_cover_slide(){
 					cslide();
 				}
 			}
+
 		//}
 	}
 }

@@ -35,18 +35,17 @@ module rotate_about_axis(v, ang, axis) {
 // https://github.com/robofun/openscad-utils/blob/master/trapezoid.scad
 
 module trapezoid(width_base, width_top, height, thickness){
-	
 
   linear_extrude(height = thickness)
-		polygon(
-			points =
-				[
-					[0,0],
-					[width_base,0],
-					[width_base-(width_base-width_top)/2,height],
-					[(width_base-width_top)/2,height]
-				],
-				paths=[[0,1,2,3]]); 
+			polygon(
+				points =
+					[
+						[0,0],
+						[width_base,0],
+						[width_base-(width_base-width_top)/2,height],
+						[(width_base-width_top)/2,height]
+					],
+					paths=[[0,1,2,3]]); 
   
 }
 
